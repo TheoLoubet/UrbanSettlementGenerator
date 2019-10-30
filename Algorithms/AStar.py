@@ -13,7 +13,7 @@ class Node():
     def __eq__(self, other):
         return self.position == other.position
 
-def aStar(p1, p2, pathMap, height_map):
+def aStar(p1, p2, pathMap, height_map, all_buildings):
 
 	logging.info("(A*) Searching a path between {} and {}".format(p1, p2))
 
@@ -78,6 +78,9 @@ def aStar(p1, p2, pathMap, height_map):
 			if pathMap[current_node.position[0]][current_node.position[1]][direction] == -1 and node_position != end_node.position:
 				#logging.info("Failed pathMap test!")
 				continue
+			if isInGarden(node_position, all_buildings) == True:
+				#logging.info("Failed lot test!")
+				continue
 			
 			# Append
 			children.append(new_node)
@@ -129,3 +132,14 @@ def getDirectionFromParent(parent, child):
 		return "down"
 	if z < 0:
 		return "up"
+
+def isInGarden(node_position, all_buildings):
+	for b in all_buildings:
+		if b.type == "house":
+			points = [house.gardenPoint1, house.gardenPoint2, house.gardenPoint3, house.gardenPoint4, house.gardenPoint5]
+			x_min_max = min(points)[0], max(points)[0] 
+			z_min_max = min(points)[1], max(points)[1] 
+			if node_position[0] > x_min_max[0] and node_position[0] < x_min_max[1] and node_position[1] > z_min_max[0] and node_position[1] < z_min_max[1]:
+				return True
+		else:
+			return False

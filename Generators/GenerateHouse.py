@@ -14,7 +14,6 @@ def generateHouse(matrix, h_min, h_max, x_min, x_max, z_min, z_max, ceiling = No
 	house.lotArea = utilityFunctions.dotdict({"y_min": h_min, "y_max": h_max, "x_min": x_min, "x_max": x_max, "z_min": z_min, "z_max": z_max})
 
 	utilityFunctions.cleanProperty(matrix, h_min+1, h_max, x_min, x_max, z_min, z_max)
-	#generateFence(matrix, h_min, x_min, x_max, z_min, z_max)
 
 	(h_min, h_max, x_min, x_max, z_min, z_max) = getHouseAreaInsideLot(h_min, h_max, x_min, x_max, z_min, z_max)
 	# calculate the top height of the walls, i.e. where the first
@@ -91,17 +90,19 @@ def generateHouse(matrix, h_min, h_max, x_min, x_max, z_min, z_max, ceiling = No
 		generateCeiling_z(matrix, ceiling_bottom, h_max, x_min-1, x_max+1, z_min-1, z_max+1, ceiling, wall, 0)
 
 	generateInterior(matrix, h_min, ceiling_bottom, house.buildArea.x_min, house.buildArea.x_max, house.buildArea.z_min, house.buildArea.z_max, ceiling)
+	if (house.buildArea.x_max-house.buildArea.x_min)*(house.buildArea.z_max-house.buildArea.z_min) <= 132:
+		generateGarden(matrix, house)
 
 	return house
 
 def getHouseAreaInsideLot(h_min, h_max, x_min, x_max, z_min, z_max):
-	house_size_x = RNG.randint(10, 14)
+	house_size_x = RNG.randint(10,14)
 	if x_max-x_min > house_size_x:
 		x_mid = x_min + (x_max-x_min)/2
 		x_min = x_mid - house_size_x/2
 		x_max = x_mid + house_size_x/2
 
-	house_size_z = RNG.randint(10, 14)
+	house_size_z = RNG.randint(10,14)
 	if z_max-z_min > house_size_z:
 		z_mid = z_min + (z_max-z_min)/2
 		z_min = z_mid - house_size_z/2
@@ -117,15 +118,6 @@ def generateFloor(matrix, h, x_min, x_max, z_min, z_max, floor):
 	for x in range(x_min, x_max+1):
 		for z in range(z_min, z_max+1):
 			matrix.setValue(h,x,z,floor)
-
-def generateFence(matrix, h, x_min, x_max, z_min, z_max):
-
-	for x in range(x_min+1, x_max):
-		matrix.setValue(h+1, x, z_max-1, (85,0))
-		matrix.setValue(h+1, x, z_min+1, (85,0))
-	for z in range(z_min+1, z_max):
-		matrix.setValue(h+1, x_max-1, z, (85,0))
-		matrix.setValue(h+1, x_min+1, z, (85,0))
 
 def generateWalls(matrix, h_min, ceiling_bottom, x_min, x_max, z_min, z_max, wall):
 
@@ -247,3 +239,139 @@ def getOrientation(matrix, area):
 			# return NORTH, WEST
 			return RNG.choice(["N", "W"])
 	return None
+
+def generateGarden(matrix, house):
+
+	def findOrientationGarden(house): #finding where to build the garden depending on where there is the most space left on the house lot
+		n_space = (abs(house.lotArea.z_min - house.buildArea.z_min), "N")
+		s_space = (abs(house.lotArea.z_max - house.buildArea.z_max), "S")
+		e_space = (abs(house.lotArea.x_max - house.buildArea.x_max), "E")
+		w_space = (abs(house.lotArea.x_min - house.buildArea.x_min), "W")
+		space_list = []
+		#We check the orientation of the door of the house so that we don't build the garden in front of it
+		if house.orientation == "N":
+			space_list.append(s_space)
+			space_list.append(e_space)
+			space_list.append(w_space)
+			space_list_sorted = sorted(space_list)
+			house.gardenOrientation = space_list_sorted[0][1]
+			if house.gardenOrientation == "S":
+				house.gardenOrientationSecondary = space_list_sorted[1][1]
+			else:
+				house.gardenOrientationSecondary = "S"
+
+		if house.orientation == "S":
+			space_list.append(n_space)
+			space_list.append(e_space)
+			space_list.append(w_space)
+			space_list_sorted = sorted(space_list)
+			house.gardenOrientation = space_list_sorted[0][1]
+			if house.gardenOrientation == "N":
+				house.gardenOrientationSecondary = space_list_sorted[1][1]
+			else:
+				house.gardenOrientationSecondary = "N"
+
+		if house.orientation == "E":
+			space_list.append(s_space)
+			space_list.append(n_space)
+			space_list.append(w_space)
+			space_list_sorted = sorted(space_list)
+			house.gardenOrientation = space_list_sorted[0][1]
+			if house.gardenOrientation == "W":
+				house.gardenOrientationSecondary = space_list_sorted[1][1]
+			else:
+				house.gardenOrientationSecondary = "W"
+
+		if house.orientation == "W":
+			space_list.append(s_space)
+			space_list.append(e_space)
+			space_list.append(n_space)
+			space_list_sorted = sorted(space_list)
+			house.gardenOrientation = space_list_sorted[0][1]
+			if house.gardenOrientation == "E":
+				house.gardenOrientationSecondary = space_list_sorted[1][1]
+			else:
+				house.gardenOrientationSecondary = "E"
+
+	def findPointsGarden(house):
+		if house.gardenOrientationSecondary in ["E", "W"]:
+			side_position = RNG.randint(house.buildArea.z_min+1, house.buildArea.z_max-1)
+		else:
+			side_position = RNG.randint(house.buildArea.x_min+1, house.buildArea.x_max-1)
+
+		if house.gardenOrientation == "N":
+			if house.gardenOrientationSecondary == "E":
+				house.gardenPoint1 = (house.buildArea.x_min, house.buildArea.z_min-1)
+				house.gardenPoint2 = (house.buildArea.x_min, house.lotArea.z_min+1)
+				house.gardenPoint3 = (house.lotArea.x_max-1, house.lotArea.z_min+1)
+				house.gardenPoint4 = (house.lotArea.x_max-1, side_position)
+				house.gardenPoint5 = (house.buildArea.x_max+1, side_position)
+			else:
+				house.gardenPoint1 = (house.buildArea.x_max, house.buildArea.z_min-1)
+				house.gardenPoint2 = (house.buildArea.x_max, house.lotArea.z_min+1)
+				house.gardenPoint3 = (house.lotArea.x_min+1, house.lotArea.z_min+1)
+				house.gardenPoint4 = (house.lotArea.x_min+1, side_position)
+				house.gardenPoint5 = (house.buildArea.x_min-1, side_position)
+
+		elif house.gardenOrientation == "S":
+			if house.gardenOrientationSecondary == "E":
+				house.gardenPoint1 = (house.buildArea.x_min, house.buildArea.z_max+1)
+				house.gardenPoint2 = (house.buildArea.x_min, house.lotArea.z_max-1)
+				house.gardenPoint3 = (house.lotArea.x_max-1, house.lotArea.z_max-1)
+				house.gardenPoint4 = (house.lotArea.x_max-1, side_position)
+				house.gardenPoint5 = (house.buildArea.x_max+1, side_position)
+			else:
+				house.gardenPoint1 = (house.buildArea.x_max, house.buildArea.z_max+1)
+				house.gardenPoint2 = (house.buildArea.x_max, house.lotArea.z_max-1)
+				house.gardenPoint3 = (house.lotArea.x_min+1, house.lotArea.z_max-1)
+				house.gardenPoint4 = (house.lotArea.x_min+1, side_position)
+				house.gardenPoint5 = (house.buildArea.x_min-1, side_position)
+		elif house.gardenOrientation == "E":
+			if house.gardenOrientationSecondary == "N":
+				house.gardenPoint1 = (house.buildArea.x_max+1, house.buildArea.z_max)
+				house.gardenPoint2 = (house.lotArea.x_max-1, house.buildArea.z_max)
+				house.gardenPoint3 = (house.lotArea.x_max-1, house.lotArea.z_min+1)
+				house.gardenPoint4 = (side_position, house.lotArea.z_min+1)
+				house.gardenPoint5 = (side_position, house.buildArea.z_min-1)
+			else:
+				house.gardenPoint1 = (house.buildArea.x_max+1, house.buildArea.z_min)
+				house.gardenPoint2 = (house.lotArea.x_max-1, house.buildArea.z_min)
+				house.gardenPoint3 = (house.lotArea.x_max-1, house.lotArea.z_max-1)
+				house.gardenPoint4 = (side_position, house.lotArea.z_max-1)
+				house.gardenPoint5 = (side_position, house.buildArea.z_max+1)
+		else:
+			if house.gardenOrientationSecondary == "N":
+				house.gardenPoint1 = (house.buildArea.x_min-1, house.buildArea.z_max)
+				house.gardenPoint2 = (house.lotArea.x_min+1, house.buildArea.z_max)
+				house.gardenPoint3 = (house.lotArea.x_min+1, house.lotArea.z_min+1)
+				house.gardenPoint4 = (side_position, house.lotArea.z_min+1)
+				house.gardenPoint5 = (side_position, house.buildArea.z_min-1)
+			else:
+				house.gardenPoint1 = (house.buildArea.x_min-1, house.buildArea.z_min)
+				house.gardenPoint2 = (house.lotArea.x_min+1, house.buildArea.z_min)
+				house.gardenPoint3 = (house.lotArea.x_min+1, house.lotArea.z_max-1)
+				house.gardenPoint4 = (side_position, house.lotArea.z_max-1)
+				house.gardenPoint5 = (side_position, house.buildArea.z_max+1)
+
+	def buildFence(matrix, house, p1, p2, h):
+		actual_point = p1
+		while actual_point != p2:
+			if actual_point[0] < p2[0]:
+				actual_point = (actual_point[0] + 1, actual_point[1])
+			elif actual_point[0] > p2[0]:
+				actual_point = (actual_point[0] - 1, actual_point[1])
+			elif actual_point[1] < p2[1]:
+				actual_point = (actual_point[0], actual_point[1] + 1)
+			elif actual_point[1] > p2[1]:
+				actual_point = (actual_point[0], actual_point[1] - 1)
+			matrix.setValue(h, actual_point[0], actual_point[1], (85, 0))
+
+	h = house.lotArea.y_min+1
+	findOrientationGarden(house)
+	findPointsGarden(house)
+	matrix.setValue(h, house.gardenPoint1[0], house.gardenPoint1[1], (85, 0))
+	buildFence(matrix, house, house.gardenPoint1, house.gardenPoint2, h)
+	buildFence(matrix, house, house.gardenPoint2, house.gardenPoint3, h)
+	buildFence(matrix, house, house.gardenPoint3, house.gardenPoint4, h)
+	buildFence(matrix, house, house.gardenPoint4, house.gardenPoint5, h)
+	#putDoorGarden(house)

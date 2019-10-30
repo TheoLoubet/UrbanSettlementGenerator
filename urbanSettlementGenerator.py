@@ -9,9 +9,11 @@ from SpacePartitioning import binarySpacePartitioning, quadtreeSpacePartitioning
 import GenerateHouse 
 import GenerateBuilding
 from Earthworks import prepareLot
-import PathBuilding
+import GeneratePath
 
 # change to INFO if you want a verbose log!
+for handler in logging.root.handlers[:]:
+   logging.root.removeHandler(handler)
 logging.basicConfig(filename="log", level=logging.WARNING, filemode='w')
 
 # remove INFO logs from pymclevel
@@ -30,7 +32,7 @@ def perform(level, box, options):
 	world = utilityFunctions.generateMatrix(level, box, width,depth,height)
 	world_space = utilityFunctions.dotdict({"y_min": 0, "y_max": height-1, "x_min": 0, "x_max": width-1, "z_min": 0, "z_max": depth-1})
 	height_map = utilityFunctions.getHeightMap(level,box)
-
+	utilityFunctions.preparationMap(world, height_map)
 	# ==== PARTITIONING OF NEIGHBOURHOODS ==== 
 	(center, neighbourhoods) = generateCenterAndNeighbourhood(world_space, height_map)
 	all_buildings = []
@@ -179,15 +181,15 @@ def perform(level, box, options):
 		p2 = m[2]
 		logging.info("Pavement with distance {} between {} and {}".format(m[0], p1.entranceLot, p2.entranceLot))
 
-	 	path = utilityFunctions.aStar(p1.entranceLot, p2.entranceLot, pathMap, height_map)
+	 	path = utilityFunctions.aStar(p1.entranceLot, p2.entranceLot, pathMap, height_map, all_buildings)
 	 	if path != None:
 	 		logging.info("Found path between {} and {}. Generating road...".format(p1.entranceLot, p2.entranceLot))
-		 	PathBuilding.pavementConnection(world, path, height_map, (pavementBlockID, pavementBlockSubtype))
+		 	GeneratePath.generatePath(world, path, height_map, (pavementBlockID, pavementBlockSubtype))
 		else:
 			logging.info("Couldnt find path between {} and {}. Generating a straight road between them...".format(p1.entranceLot, p2.entranceLot))
-	 		PathBuilding.pavementConnection_StraightLine(world, p1.entranceLot[1], p1.entranceLot[2], p2.entranceLot[1], p2.entranceLot[2], height_map, (pavementBlockID, pavementBlockSubtype))
+	 		GeneratePath.generatePath_StraightLine(world, p1.entranceLot[1], p1.entranceLot[2], p2.entranceLot[1], p2.entranceLot[2], height_map, (pavementBlockID, pavementBlockSubtype))
 
-	# ==== UPDATE WORLD ==== 
+	# ==== UPDATE WORLD ====
 	world.updateWorld()
 
 def generateCenterAndNeighbourhood(space, height_map):

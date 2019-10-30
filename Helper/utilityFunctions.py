@@ -294,8 +294,8 @@ def getManhattanDistance(p1,p2):
 # or other unwalkable block inside that partition
 def hasValidGroundBlocks(x_min, x_max,z_min,z_max, height_map):
 	
-	for x in range(x_min, x_max):
-		for z in range(z_min, z_max):
+	for x in range(x_min, x_max+1):
+		for z in range(z_min, z_max+1):
 			if height_map[x][z] == -1:
 				return False
 	return True
@@ -334,7 +334,6 @@ def getHeightMap(level, box):
 def getPathMap(height_map, width, depth):
 	pathMap = []
 
-	print(width, depth)
 	for x in range(width):
 		pathMap.append([])
 		for z in range(depth):
@@ -592,3 +591,20 @@ def checkSameHeight(terrain, minx, maxx, minz, maxz, random_x, random_z, mininum
 				return False
 
 	return True
+
+def preparationMap(matrix, height_map):
+	undesired_block = [(8,0),(9,0),(10,0),(11,0),(17,0),(18,0)]
+	min_height = 255
+	max_height = 0
+	for x in range(0, len(height_map)):
+		for z in range(0, len(height_map[0])):
+			if height_map[x][z] != -1 and height_map[x][z] > max_height:
+				max_height = height_map[x][z]
+			elif height_map[x][z] != -1 and height_map[x][z] < min_height:
+				min_height = height_map[x][z]
+	print(min_height)
+	print(max_height)
+
+	"""for y in range(min_height, max_height+1):
+		for x in range(0, matrix.width):
+			for z in range(0,matrix.depth):"""
