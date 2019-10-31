@@ -53,7 +53,7 @@ def generateHouse(matrix, h_min, h_max, x_min, x_max, z_min, z_max, ceiling = No
 		generateDoor(matrix, door_y, door_x, door_z, (64,9), (64,3))
 		house.entranceLot = (h_min+1, door_x, house.lotArea.z_max)
 		# entrance path
-		for z in range(door_z+1, house.lotArea.z_max):
+		for z in range(door_z+1, house.lotArea.z_max+1):
 			matrix.setValue(h_min,door_x,z, (4,0))
 			matrix.setValue(h_min,door_x-1,z, (4,0))
 			matrix.setValue(h_min,door_x+1,z, (4,0))
@@ -366,6 +366,11 @@ def generateGarden(matrix, house):
 				actual_point = (actual_point[0], actual_point[1] - 1)
 			matrix.setValue(h, actual_point[0], actual_point[1], (85, 0))
 
+	def buildDoorGarden(matrix, house, door_garden_y):
+		door_garden_x = int(round((house.gardenPoint3[0] + house.gardenPoint4[0])*0.5))
+		door_garden_z = int(round((house.gardenPoint3[1] + house.gardenPoint4[1])*0.5))
+		matrix.setValue(door_garden_y, door_garden_x, door_garden_z, 107)
+
 	h = house.lotArea.y_min+1
 	list_space = findOrientationGarden(house)
 	if list_space[0][0] > 2 and list_space[1][0] > 2:
@@ -375,4 +380,4 @@ def generateGarden(matrix, house):
 		buildFence(matrix, house, house.gardenPoint2, house.gardenPoint3, h)
 		buildFence(matrix, house, house.gardenPoint3, house.gardenPoint4, h)
 		buildFence(matrix, house, house.gardenPoint4, house.gardenPoint5, h)
-		#buildDoorGarden(matrix, house, h)
+		buildDoorGarden(matrix, house, h)

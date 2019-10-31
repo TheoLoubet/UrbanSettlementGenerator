@@ -30,7 +30,8 @@ def generatePath(matrix, path, height_map, pavementBlock = (4,0), baseBlock=(2,0
 
 	# 10 first blocks to build the first light
 	block_section = path[0:20]
-	buildLight(matrix, block_section, path, height_map)
+	light_list = [] #to have all the position of the lights
+	light_list.append(buildLight(matrix, block_section, path, height_map))
 
 	
 	def fillUnderneath(matrix, y, x, z, baseBlock):
@@ -76,7 +77,7 @@ def generatePath(matrix, path, height_map, pavementBlock = (4,0), baseBlock=(2,0
 				block_section = path[i:i+20]
 			except:
 				block_section = path[i:len(path)]
-			buildLight(matrix, block_section, path, height_map)
+			light_list.append(buildLight(matrix, block_section, path, height_map))
 
 		logging.info("Generating road at point {}, {}, {}".format(h, x, z))
 		logging.info("next_h: {}".format(next_h))
@@ -86,7 +87,7 @@ def generatePath(matrix, path, height_map, pavementBlock = (4,0), baseBlock=(2,0
 		if x != next_block[0]:
 
 			# if that side block is walkable
-			if z-1 >= 0 and height_map[x][z-1] != -1: 
+			if z-1 >= 0 and height_map[x][z-1] != -1 and (x, z-1) not in light_list: 
 				matrix.setValue(h,x,z-1,pavementBlock)
 				# try to fill with earth underneath if it's empty
 				#logging.info("Filling underneath at height {}".format(h-1))
@@ -95,7 +96,7 @@ def generatePath(matrix, path, height_map, pavementBlock = (4,0), baseBlock=(2,0
 				fillAbove(matrix, h+1, x, z-1, 5)
 
 			# if the opposite side block is walkable
-			if z+1 < matrix.depth and height_map[x][z+1] != -1:
+			if z+1 < matrix.depth and height_map[x][z+1] != -1 and (x, z+1) not in light_list:
 				matrix.setValue(h,x,z+1,pavementBlock)
 				#logging.info("Filling underneath at height {}".format(h-1))
 				fillUnderneath(matrix, h-1, x, z+1, pavementBlock)
@@ -104,14 +105,14 @@ def generatePath(matrix, path, height_map, pavementBlock = (4,0), baseBlock=(2,0
 		elif z != next_block[1]:
 			# check if we are moving in the z axis (so add a new pavement
 			# on the x-1 block) and if that side block is walkable
-			if x-1 >= 0 and height_map[x-1][z] != -1:
+			if x-1 >= 0 and height_map[x-1][z] != -1 and (x-1, z) not in light_list:
 				matrix.setValue(h,x-1,z,pavementBlock)
 				#logging.info("Filling underneath at height {}".format(h-1))
 				fillUnderneath(matrix, h-1, x-1, z, pavementBlock)
 				fillAbove(matrix, h+1, x-1, z, 5)
 
 
-			if x+1 < matrix.width and height_map[x+1][z] != -1:
+			if x+1 < matrix.width and height_map[x+1][z] != -1 and (x+1, z) not in light_list:
 				matrix.setValue(h,x+1,z,pavementBlock)
 				#logging.info("Filling underneath at height {}".format(h-1))
 				fillUnderneath(matrix, h-1, x+1, z, pavementBlock)
@@ -169,7 +170,7 @@ def buildLight(matrix, block_section, path, height_map):
 	def isBuildableLight(matrix, light_pos, path, height_map): #verify that the position is suitable for building a light
 		h_light = height_map[light_pos[0]][light_pos[1]]
 
-		if (light_pos[0], light_pos[1]) not in path and matrix.getValue(h_light+1,light_pos[0],light_pos[1]) in air_like and matrix.getValue(h_light,light_pos[0],light_pos[1]) not in air_like:
+		if (light_pos[0], light_pos[1]) not in path and h_light != -1:
 			return True
 
 	def findPos(matrix, light_pos, path, height_map): #find a position next to the one given that is suitablle for building a light
@@ -194,6 +195,7 @@ def buildLight(matrix, block_section, path, height_map):
 		light_pos = findPos(matrix, light_pos, path, height_map)
 		if isBuildableLight(matrix, light_pos, path, height_map) == True:
 			generateLight(matrix, height_map[light_pos[0]][light_pos[1]], light_pos[0], light_pos[1])
+	return light_pos
 
 def computeCenterOfGravity(block_section, height_map): #compute the center of gravity to have a general idea of where a light could be put
 	x = 0
