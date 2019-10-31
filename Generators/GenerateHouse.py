@@ -90,19 +90,18 @@ def generateHouse(matrix, h_min, h_max, x_min, x_max, z_min, z_max, ceiling = No
 		generateCeiling_z(matrix, ceiling_bottom, h_max, x_min-1, x_max+1, z_min-1, z_max+1, ceiling, wall, 0)
 
 	generateInterior(matrix, h_min, ceiling_bottom, house.buildArea.x_min, house.buildArea.x_max, house.buildArea.z_min, house.buildArea.z_max, ceiling)
-	if (house.buildArea.x_max-house.buildArea.x_min)*(house.buildArea.z_max-house.buildArea.z_min) <= 132:
-		generateGarden(matrix, house)
+	generateGarden(matrix, house)
 
 	return house
 
 def getHouseAreaInsideLot(h_min, h_max, x_min, x_max, z_min, z_max):
-	house_size_x = RNG.randint(10,14)
+	house_size_x = RNG.randint(10,13)
 	if x_max-x_min > house_size_x:
 		x_mid = x_min + (x_max-x_min)/2
 		x_min = x_mid - house_size_x/2
 		x_max = x_mid + house_size_x/2
 
-	house_size_z = RNG.randint(10,14)
+	house_size_z = RNG.randint(10,13)
 	if z_max-z_min > house_size_z:
 		z_mid = z_min + (z_max-z_min)/2
 		z_min = z_mid - house_size_z/2
@@ -292,6 +291,7 @@ def generateGarden(matrix, house):
 				house.gardenOrientationSecondary = space_list_sorted[1][1]
 			else:
 				house.gardenOrientationSecondary = "E"
+		return space_list_sorted
 
 	def findPointsGarden(house):
 		if house.gardenOrientationSecondary in ["E", "W"]:
@@ -367,11 +367,12 @@ def generateGarden(matrix, house):
 			matrix.setValue(h, actual_point[0], actual_point[1], (85, 0))
 
 	h = house.lotArea.y_min+1
-	findOrientationGarden(house)
-	findPointsGarden(house)
-	matrix.setValue(h, house.gardenPoint1[0], house.gardenPoint1[1], (85, 0))
-	buildFence(matrix, house, house.gardenPoint1, house.gardenPoint2, h)
-	buildFence(matrix, house, house.gardenPoint2, house.gardenPoint3, h)
-	buildFence(matrix, house, house.gardenPoint3, house.gardenPoint4, h)
-	buildFence(matrix, house, house.gardenPoint4, house.gardenPoint5, h)
-	#putDoorGarden(house)
+	list_space = findOrientationGarden(house)
+	if list_space[0][0] > 2 and list_space[1][0] > 2:
+		findPointsGarden(house)
+		matrix.setValue(h, house.gardenPoint1[0], house.gardenPoint1[1], (85, 0))
+		buildFence(matrix, house, house.gardenPoint1, house.gardenPoint2, h)
+		buildFence(matrix, house, house.gardenPoint2, house.gardenPoint3, h)
+		buildFence(matrix, house, house.gardenPoint3, house.gardenPoint4, h)
+		buildFence(matrix, house, house.gardenPoint4, house.gardenPoint5, h)
+		#buildDoorGarden(matrix, house, h)

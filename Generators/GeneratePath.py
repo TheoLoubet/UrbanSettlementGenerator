@@ -167,8 +167,8 @@ def buildLight(matrix, block_section, path, height_map):
 		matrix.setValue(h+4,x,z,(178,0))
 
 	def isBuildableLight(matrix, light_pos, path, height_map): #verify that the position is suitable for building a light
-		air_like = [0, 6, 17, 18, 30, 31, 32, 37, 38, 39, 40, 59, 81, 83, 85, 104, 105, 106, 107, 111, 141, 142, 161, 162, 175, 78, 79, 99]
 		h_light = height_map[light_pos[0]][light_pos[1]]
+
 		if (light_pos[0], light_pos[1]) not in path and matrix.getValue(h_light+1,light_pos[0],light_pos[1]) in air_like and matrix.getValue(h_light,light_pos[0],light_pos[1]) not in air_like:
 			return True
 
@@ -188,11 +188,12 @@ def buildLight(matrix, block_section, path, height_map):
 
 	light_pos = computeCenterOfGravity(block_section, height_map)
 
-	if isBuildableLight(matrix, light_pos, path, height_map) == True: 
+	if isBuildableLight(matrix, light_pos, path, height_map) == True:
 		generateLight(matrix, height_map[light_pos[0]][light_pos[1]], light_pos[0], light_pos[1])
 	else:
 		light_pos = findPos(matrix, light_pos, path, height_map)
-		generateLight(matrix, height_map[light_pos[0]][light_pos[1]], light_pos[0], light_pos[1])
+		if isBuildableLight(matrix, light_pos, path, height_map) == True:
+			generateLight(matrix, height_map[light_pos[0]][light_pos[1]], light_pos[0], light_pos[1])
 
 def computeCenterOfGravity(block_section, height_map): #compute the center of gravity to have a general idea of where a light could be put
 	x = 0
