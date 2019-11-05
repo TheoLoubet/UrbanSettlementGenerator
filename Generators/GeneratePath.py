@@ -7,12 +7,14 @@ water_like = [8, 9, 10, 11]
 
 def generatePath_StraightLine(matrix, x_p1, z_p1, x_p2, z_p2, height_map, pavementBlock = (4,0)):
 	logging.info("Connecting {} and {}".format((x_p1, z_p1), (x_p2, z_p2)))
-	for x in utilityFunctions.twoway_range(x_p1, x_p2):
+	for x in twoway_range(x_p1, x_p2):
 		h = height_map[x][z_p1]
+		h = matrix.getMatrixY(h)
 		matrix.setValue(h,x,z_p1,pavementBlock)
 		
-	for z in utilityFunctions.twoway_range(z_p1, z_p2):
+	for z in twoway_range(z_p1, z_p2):
 		h = height_map[x_p2][z]
+		h = matrix.getMatrixY(h)
 		matrix.setValue(h,x_p2,z, pavementBlock)
 		matrix.setValue(h+1,x_p2,z, (0,0))
 
@@ -27,12 +29,6 @@ def generatePath(matrix, path, height_map, pavementBlock = (4,0), baseBlock=(2,0
 	block = previous_block = path[0]
 	x = block[0]
 	z = block[1]
-
-	# 10 first blocks to build the first light
-	block_section = path[0:20]
-	light_list = [] #to have all the position of the lights
-	light_list.append(buildLight(matrix, block_section, path, height_map))
-
 	
 	def fillUnderneath(matrix, y, x, z, baseBlock):
 		if y < 0: return
@@ -67,17 +63,13 @@ def generatePath(matrix, path, height_map, pavementBlock = (4,0), baseBlock=(2,0
 
 		next_block = path[i+1]
 		next_h = height_map[next_block[0]][next_block[1]]
+		next_h = matrix.getMatrixY(h)
+
 		if i!=0:
 			previous_block = path[i-1]
 			previous_h = height_map[previous_block[0]][previous_block[1]]
+			previous_h = matrix.getMatrixY(h)
 
-		#update the blocksection and build next light
-		if block == block_section[len(block_section)-1] and previous_block == block_section[len(block_section)-2]:
-			try:
-				block_section = path[i:i+20]
-			except:
-				block_section = path[i:len(path)]
-			light_list.append(buildLight(matrix, block_section, path, height_map))
 
 		logging.info("Generating road at point {}, {}, {}".format(h, x, z))
 		logging.info("next_h: {}".format(next_h))
@@ -87,8 +79,9 @@ def generatePath(matrix, path, height_map, pavementBlock = (4,0), baseBlock=(2,0
 		if x != next_block[0]:
 
 			# if that side block is walkable
-			if z-1 >= 0 and height_map[x][z-1] != -1 and (x, z-1) not in light_list: 
+			if z-1 >= 0 and height_map[x][z-1] != -1: 
 				matrix.setValue(h,x,z-1,pavementBlock)
+				height_map[x][z-1] = h
 				# try to fill with earth underneath if it's empty
 				#logging.info("Filling underneath at height {}".format(h-1))
 				fillUnderneath(matrix, h-1, x, z-1, pavementBlock)
@@ -96,8 +89,9 @@ def generatePath(matrix, path, height_map, pavementBlock = (4,0), baseBlock=(2,0
 				fillAbove(matrix, h+1, x, z-1, 5)
 
 			# if the opposite side block is walkable
-			if z+1 < matrix.depth and height_map[x][z+1] != -1 and (x, z+1) not in light_list:
+			if z+1 < matrix.depth and height_map[x][z+1] != -1:
 				matrix.setValue(h,x,z+1,pavementBlock)
+				height_map[x][z+1] = h
 				#logging.info("Filling underneath at height {}".format(h-1))
 				fillUnderneath(matrix, h-1, x, z+1, pavementBlock)
 				fillAbove(matrix, h+1, x, z+1, 5)
@@ -105,29 +99,38 @@ def generatePath(matrix, path, height_map, pavementBlock = (4,0), baseBlock=(2,0
 		elif z != next_block[1]:
 			# check if we are moving in the z axis (so add a new pavement
 			# on the x-1 block) and if that side block is walkable
-			if x-1 >= 0 and height_map[x-1][z] != -1 and (x-1, z) not in light_list:
+			if x-1 >= 0 and height_map[x-1][z] != -1:
 				matrix.setValue(h,x-1,z,pavementBlock)
+				height_map[x-1][z] = h
 				#logging.info("Filling underneath at height {}".format(h-1))
 				fillUnderneath(matrix, h-1, x-1, z, pavementBlock)
 				fillAbove(matrix, h+1, x-1, z, 5)
 
 
-			if x+1 < matrix.width and height_map[x+1][z] != -1 and (x+1, z) not in light_list:
+			if x+1 < matrix.width and height_map[x+1][z] != -1:
 				matrix.setValue(h,x+1,z,pavementBlock)
+				height_map[x+1][z] = h
 				#logging.info("Filling underneath at height {}".format(h-1))
 				fillUnderneath(matrix, h-1, x+1, z, pavementBlock)
 				fillAbove(matrix, h+1, x+1, z, 5)
 
-	# another iteration over the path to generate ladders
+	# another iteration over the path to generate ladders and lights
 	# this is to guarantee that fillAbove or any other
 	# manipulations of the environment around the path
-	# will erase the ladder blocks
+	# will erase the ladder blocks or the lights
+	block_section = path[0:16] # Block section of 20 blocks to find the right place to put lights
+	isPut = generateLight(matrix, block_section, path, height_map)
+	if isPut == False: #Failed to find a good position with the center of mass, build it next to or on the path
+		(xl, zl) = findPos(matrix, path[8][0], path[8][1], path, height_map)
+		if (xl, zl) != (-1, -1):
+			buildLight(matrix, height_map[xl][zl], xl, zl)
+		else:
+			buildLight(matrix, height_map[path[8][0]][path[8][1]], path[8][0], path[8][1])
 	for i in range(0, len(path)-1):
 
 		block = path[i]
 		x = block[0]
 		z = block[1]
-		#h = 100
 		h = height_map[x][z]
 		h = matrix.getMatrixY(h)
 
@@ -158,46 +161,41 @@ def generatePath(matrix, path, height_map, pavementBlock = (4,0), baseBlock=(2,0
 					# are cobblestone and not dirt, etc
 					matrix.setValue(ladder_h, x, z, (pavementBlock))
 
-def buildLight(matrix, block_section, path, height_map):
+		#build next light and update the blocksection
+		if block == block_section[len(block_section)-1] and previous_block == block_section[len(block_section)-2]:
+			isPut = generateLight(matrix, block_section, path, height_map)
+			if isPut == False: #Failed to find a good position with the center of mass, build it next to or on the path
+				(xl, zl) = findPos(matrix, path[i+8][0], path[i+8][1], path, height_map)
+				if (xl, zl) != (-1, -1):
+					buildLight(matrix, height_map[xl][zl], xl, zl)
+				else:
+					buildLight(matrix, height_map[path[i+8][0]][path[i+8][1]], path[i+8][0], path[i+8][1])
+			try:
+				block_section = path[i:i+16]
+			except:
+				block_section = path[i:len(path)]
 
-	def generateLight(matrix, h, x, z): #put the light at the position given
-		logging.info("Generating light at point {}, {}, {}".format(h+1, x, z))
-		matrix.setValue(h+1,x,z,(139,0))
-		matrix.setValue(h+2,x,z,(139,0))
-		matrix.setValue(h+3,x,z,(123,0))
-		matrix.setValue(h+4,x,z,(178,0))
+def generateLight(matrix, block_section, path, height_map):
+	(x, z) = computeCenterOfMass(block_section)
+	h_light = height_map[x][z]
 
-	def isBuildableLight(matrix, light_pos, path, height_map): #verify that the position is suitable for building a light
-		h_light = height_map[light_pos[0]][light_pos[1]]
-
-		if (light_pos[0], light_pos[1]) not in path and h_light != -1:
-			return True
-
-	def findPos(matrix, light_pos, path, height_map): #find a position next to the one given that is suitablle for building a light
-		x = light_pos[0]
-		z  = light_pos[1]
-		if isBuildableLight(matrix, (x+1,z), path, height_map) == True:
-			return (x+1,z)
-		elif isBuildableLight(matrix, (x,z+1), path, height_map) == True:
-			return (x,z+1)
-		elif isBuildableLight(matrix, (x-1,z), path, height_map) == True:
-			return (x-1,z)
-		elif isBuildableLight(matrix, (x,z-1), path, height_map) == True:
-			return (x,z-1)
-		else:
-			return light_pos
-
-	light_pos = computeCenterOfGravity(block_section, height_map)
-
-	if isBuildableLight(matrix, light_pos, path, height_map) == True:
-		generateLight(matrix, height_map[light_pos[0]][light_pos[1]], light_pos[0], light_pos[1])
+	if (x, z) not in path and h_light != -1 and matrix.getValue(h_light+1,x,z) != 65 and matrix.getValue(h_light,x,z) != 65: #validity of the center of mass
+		buildLight(matrix, h_light, x, z)
 	else:
-		light_pos = findPos(matrix, light_pos, path, height_map)
-		if isBuildableLight(matrix, light_pos, path, height_map) == True:
-			generateLight(matrix, height_map[light_pos[0]][light_pos[1]], light_pos[0], light_pos[1])
-	return light_pos
+		(x, z) = findPos(matrix, x, z, path, height_map)
+		if (x, z) != (-1, -1):
+			buildLight(matrix, h_light, x, z)
+		else:
+			return False
 
-def computeCenterOfGravity(block_section, height_map): #compute the center of gravity to have a general idea of where a light could be put
+def buildLight(matrix, h, x, z): #put the light at the position given
+	logging.info("Generating light at point {}, {}, {}".format(h+1, x, z))
+	matrix.setValue(h+1,x,z,(139,0))
+	matrix.setValue(h+2,x,z,(139,0))
+	matrix.setValue(h+3,x,z,(123,0))
+	matrix.setValue(h+4,x,z,(178,0))
+
+def computeCenterOfMass(block_section): #compute the center of gravity to have a general idea of where a light could be put
 	x = 0
 	z = 0
 	for i in range(0, len(block_section)):
@@ -205,5 +203,24 @@ def computeCenterOfGravity(block_section, height_map): #compute the center of gr
 		z += block_section[i][1]
 	x = int(round(x/len(block_section)))
 	z = int(round(z/len(block_section)))
-	center = (x,z)
-	return center
+	return (x, z)
+
+def findPos(matrix, x, z, path, height_map): #try to find a position next to the one given that is suitable for building a light
+	if height_map[x+1][z] != -1 and matrix.getValue(height_map[x+1][z]+1,x+1,z) != 65 and matrix.getValue(height_map[x+1][z],x+1,z) != 65:
+		return (x+1,z)
+	elif height_map[x][z+1] != -1 and matrix.getValue(height_map[x][z+1]+1,x,z+1) != 65 and matrix.getValue(height_map[x][z+1],x,z+1) != 65:
+		return (x,z+1)
+	elif height_map[x-1][z] != -1 and matrix.getValue(height_map[x-1][z]+1,x-1,z) != 65 and matrix.getValue(height_map[x-1][z],x-1,z) != 65:
+		return (x-1,z)
+	elif height_map[x][z-1] != -1 and matrix.getValue(height_map[x][z-1]+1,x,z-1) != 65 and matrix.getValue(height_map[x][z-1],x,z-1) != 65:
+		return (x,z-1)
+	elif height_map[x+1][z+1] != -1 and matrix.getValue(height_map[x+1][z+1]+1,x+1,z+1) != 65 and matrix.getValue(height_map[x+1][z+1],x+1,z+1) != 65:
+		return (x+1,z+1)
+	elif height_map[x-1][z-1] != -1 and matrix.getValue(height_map[x-1][z-1]+1,x-1,z-1) != 65 and matrix.getValue(height_map[x-1][z-1],x-1,z-1) != 65:
+		return (x-1,z+1)
+	elif height_map[x+1][z-1] != -1 and matrix.getValue(height_map[x+1][z-1]+1,x+1,z-1) != 65 and matrix.getValue(height_map[x+1][z-1],x+1,z-1) != 65:
+		return (x+1,z-1)
+	elif height_map[x-1][z+1] != -1 and matrix.getValue(height_map[x-1][z+1]+1,x-1,z+1) != 65 and matrix.getValue(height_map[x-1][z+1],x-1,z+1) != 65:
+		return (x-1,z+1)
+	else:
+		return (-1, -1)
