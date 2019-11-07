@@ -293,7 +293,7 @@ def generateGarden(matrix, house):
 				house.gardenOrientationSecondary = "E"
 		return space_list_sorted
 
-	def findPointsGarden(house):
+	def findPointsGarden(house): #find a point on one other side of the house to extend the garden on this side
 		if house.gardenOrientationSecondary in ["E", "W"]:
 			side_position = RNG.randint(house.buildArea.z_min+1, house.buildArea.z_max-1)
 		else:
@@ -353,7 +353,7 @@ def generateGarden(matrix, house):
 				house.gardenPoint4 = (side_position, house.lotArea.z_max-1)
 				house.gardenPoint5 = (side_position, house.buildArea.z_max+1)
 
-	def buildFence(matrix, house, p1, p2, h):
+	def buildFence(matrix, house, p1, p2, h): #build a line of fence from p1 to p2
 		actual_point = p1
 		while actual_point != p2:
 			if actual_point[0] < p2[0]:
@@ -366,14 +366,21 @@ def generateGarden(matrix, house):
 				actual_point = (actual_point[0], actual_point[1] - 1)
 			matrix.setValue(h, actual_point[0], actual_point[1], (85, 0))
 
-	def buildDoorGarden(matrix, house, door_garden_y):
-		door_garden_x = int(round((house.gardenPoint3[0] + house.gardenPoint4[0])*0.5))
-		door_garden_z = int(round((house.gardenPoint3[1] + house.gardenPoint4[1])*0.5))
-		matrix.setValue(door_garden_y, door_garden_x, door_garden_z, 107)
+	def buildDoorGarden(matrix, house, door_garden_y): #build a doorfor the garden
+		door_garden_x = int(round((house.gardenPoint2[0] + house.gardenPoint3[0])*0.5))
+		door_garden_z = int(round((house.gardenPoint2[1] + house.gardenPoint3[1])*0.5))
+		if house.gardenOrientation == "N":
+			matrix.setValue(door_garden_y, door_garden_x, door_garden_z, (107, 2))
+		elif house.gardenOrientation == "S":
+			matrix.setValue(door_garden_y, door_garden_x, door_garden_z, (107, 0))
+		elif house.gardenOrientation == "E":
+			matrix.setValue(door_garden_y, door_garden_x, door_garden_z, (107, 3))
+		elif house.gardenOrientation == "W":
+			matrix.setValue(door_garden_y, door_garden_x, door_garden_z, (107, 1))
 
 	h = house.lotArea.y_min+1
 	list_space = findOrientationGarden(house)
-	if list_space[0][0] > 2 and list_space[1][0] > 2:
+	if list_space[0][0] > 2 and list_space[1][0] > 2: #no garden if not enough space
 		findPointsGarden(house)
 		matrix.setValue(h, house.gardenPoint1[0], house.gardenPoint1[1], (85, 0))
 		buildFence(matrix, house, house.gardenPoint1, house.gardenPoint2, h)
