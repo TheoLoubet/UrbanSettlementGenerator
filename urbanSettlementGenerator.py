@@ -174,8 +174,8 @@ def perform(level, box, options):
 	logging.info("Calling MST on {} buildings".format(len(all_buildings)))
 	MST = utilityFunctions.getMST_Manhattan(all_buildings, pathMap, height_map)
 	
-	pavementBlockID = 4 
-	pavementBlockSubtype = 0
+	pavementBlockID = 1
+	pavementBlockSubtype = 6
 	for m in MST:
 		p1 = m[1]
 		p2 = m[2]

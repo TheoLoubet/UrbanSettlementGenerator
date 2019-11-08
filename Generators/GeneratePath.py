@@ -5,7 +5,7 @@ air_like = [0, 6, 17, 18, 30, 31, 32, 37, 38, 39, 40, 59, 81, 83, 85, 104, 105, 
 ground_like = [1, 2, 3]
 water_like = [8, 9, 10, 11]
 
-def generatePath_StraightLine(matrix, x_p1, z_p1, x_p2, z_p2, height_map, pavementBlock = (4,0)):
+def generatePath_StraightLine(matrix, x_p1, z_p1, x_p2, z_p2, height_map, pavementBlock = (1,6)):
 	logging.info("Connecting {} and {}".format((x_p1, z_p1), (x_p2, z_p2)))
 	for x in twoway_range(x_p1, x_p2):
 		h = height_map[x][z_p1]
@@ -25,7 +25,7 @@ def getOrientation(x1, z1, x2, z2):
 	elif z1 > z2: return "N"
 	else: return None
 
-def generatePath(matrix, path, height_map, pavementBlock = (4,0), baseBlock=(2,0)):
+def generatePath(matrix, path, height_map, pavementBlock = (1,6), baseBlock=(3,0)):
 	block = previous_block = path[0]
 	x = block[0]
 	z = block[1]
@@ -187,16 +187,15 @@ def generatePath(matrix, path, height_map, pavementBlock = (4,0), baseBlock=(2,0
 
 def generateLight(matrix, block_section, path, height_map):
 	(x, z) = computeCenterOfMass(block_section)
-	h_light = height_map[x][z]
 
-	if (x, z) not in path and h_light != -1 and matrix.getValue(h_light+1,x,z) != 65 and matrix.getValue(h_light+1,x,z) != 139: #validity of the center of mass
+	if (x, z) not in path and height_map[x][z] != -1 and matrix.getValue(height_map[x][z]+1,x,z) != 65 and matrix.getValue(height_map[x][z]+1,x,z) != 139: #validity of the center of mass
 		if isNeighborLight(matrix,height_map, x, z) != True:
-			buildLight(matrix, h_light, x, z)
+			buildLight(matrix, height_map[x][z], x, z)
 	else:
 		(x, z) = findPos(matrix, x, z, path, height_map)
 		if (x, z) != (-1, -1):
 			if isNeighborLight(matrix,height_map, x, z) != True:
-				buildLight(matrix, h_light, x, z)
+				buildLight(matrix, height_map[x][z], x, z)
 		else:
 			return False
 
@@ -205,7 +204,7 @@ def buildLight(matrix, h, x, z): #put the light at the position given
 	matrix.setValue(h+1,x,z,(139,0))
 	matrix.setValue(h+2,x,z,(139,0))
 	matrix.setValue(h+3,x,z,(123,0))
-	matrix.setEntity(h+4, x, z, (178,0), "daylight_detector_inverted")
+	matrix.setEntity(h+4, x, z, (178,15), "daylight_detector")
 
 def computeCenterOfMass(block_section): #compute the center of gravity to have a general idea of where a light could be put
 	x = 0

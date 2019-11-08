@@ -45,9 +45,9 @@ def generateBuilding(matrix, h_min, h_max, x_min, x_max, z_min, z_max):
 		generateDoor(matrix, h_min+1, door_x, door_z, (64,9), (64,3))
 		building.entranceLot = (h_min+1, door_x, building.area.z_max)
 		for z in range(door_z+1, building.area.z_max):
-			matrix.setValue(h_min,door_x,z, (4,0))
-			matrix.setValue(h_min,door_x-1,z, (4,0))
-			matrix.setValue(h_min,door_x+1,z, (4,0))
+			matrix.setValue(h_min,door_x,z, (1,6))
+			matrix.setValue(h_min,door_x-1,z, (1,6))
+			matrix.setValue(h_min,door_x+1,z, (1,6))
 
 		# apartment windows
 		generateBuildingWindows_AlongZ(matrix, h_min, h_max, floor_size, x_min, x_max, z_min)

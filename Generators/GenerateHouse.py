@@ -43,9 +43,9 @@ def generateHouse(matrix, h_min, h_max, x_min, x_max, z_min, z_max, ceiling = No
 		house.entranceLot = (h_min+1, door_x, house.lotArea.z_min)
 		# entrance path
 		for z in range(house.lotArea.z_min, door_z):
-			matrix.setValue(h_min,door_x,z, (4,0))
-			matrix.setValue(h_min,door_x-1,z, (4,0))
-			matrix.setValue(h_min,door_x+1,z, (4,0))
+			matrix.setValue(h_min,door_x,z, (1,6))
+			matrix.setValue(h_min,door_x-1,z, (1,6))
+			matrix.setValue(h_min,door_x+1,z, (1,6))
 		
 	elif house.orientation == "S":
 		door_x = RNG.randint(house.buildArea.x_min+4, house.buildArea.x_max-4)
@@ -54,9 +54,9 @@ def generateHouse(matrix, h_min, h_max, x_min, x_max, z_min, z_max, ceiling = No
 		house.entranceLot = (h_min+1, door_x, house.lotArea.z_max)
 		# entrance path
 		for z in range(door_z+1, house.lotArea.z_max+1):
-			matrix.setValue(h_min,door_x,z, (4,0))
-			matrix.setValue(h_min,door_x-1,z, (4,0))
-			matrix.setValue(h_min,door_x+1,z, (4,0))
+			matrix.setValue(h_min,door_x,z, (1,6))
+			matrix.setValue(h_min,door_x-1,z, (1,6))
+			matrix.setValue(h_min,door_x+1,z, (1,6))
 
 	elif house.orientation == "W":
 		door_x = house.buildArea.x_min
@@ -65,9 +65,9 @@ def generateHouse(matrix, h_min, h_max, x_min, x_max, z_min, z_max, ceiling = No
 		house.entranceLot = (h_min+1, house.lotArea.x_min, door_z) 
 		# entrance path
 		for x in range(house.lotArea.x_min, door_x):
-			matrix.setValue(h_min,x,door_z, (4,0))
-			matrix.setValue(h_min,x,door_z-1, (4,0))
-			matrix.setValue(h_min,x,door_z+1, (4,0))
+			matrix.setValue(h_min,x,door_z, (1,6))
+			matrix.setValue(h_min,x,door_z-1, (1,6))
+			matrix.setValue(h_min,x,door_z+1, (1,6))
 
 	elif house.orientation == "E":
 		door_x = house.buildArea.x_max
@@ -76,9 +76,9 @@ def generateHouse(matrix, h_min, h_max, x_min, x_max, z_min, z_max, ceiling = No
 		house.entranceLot = (h_min+1, house.lotArea.x_max, door_z) 
 		# entrance path
 		for x in range(door_x+1, house.lotArea.x_max+1):
-			matrix.setValue(h_min,x,door_z, (4,0))
-			matrix.setValue(h_min,x,door_z-1, (4,0))
-			matrix.setValue(h_min,x,door_z+1, (4,0))
+			matrix.setValue(h_min,x,door_z, (1,6))
+			matrix.setValue(h_min,x,door_z-1, (1,6))
+			matrix.setValue(h_min,x,door_z+1, (1,6))
 
 	if house.orientation == "N" or house.orientation == "S":
 		generateWindow_alongX(matrix, window_y, house.buildArea.x_min, house.buildArea.z_min, house.buildArea.z_max)
