@@ -205,7 +205,7 @@ def buildLight(matrix, h, x, z): #put the light at the position given
 	matrix.setValue(h+1,x,z,(139,0))
 	matrix.setValue(h+2,x,z,(139,0))
 	matrix.setValue(h+3,x,z,(123,0))
-	matrix.setValue(h+4,x,z,(178,0))
+	matrix.setEntity(h+4, x, z, (178,0), "daylight_detector_inverted")
 
 def computeCenterOfMass(block_section): #compute the center of gravity to have a general idea of where a light could be put
 	x = 0
