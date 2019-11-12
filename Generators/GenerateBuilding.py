@@ -43,7 +43,7 @@ def generateBuilding(matrix, h_min, h_max, x_min, x_max, z_min, z_max):
 		door_x = RNG.randint(x_min+1, x_max-1)
 		door_z = z_max
 		generateDoor(matrix, h_min+1, door_x, door_z, (64,9), (64,3))
-		building.entranceLot = (h_min+1, door_x, building.area.z_max)
+		building.entranceLot = (door_x, building.area.z_max)
 		for z in range(door_z+1, building.area.z_max):
 			matrix.setValue(h_min,door_x,z, (1,6))
 			matrix.setValue(h_min,door_x-1,z, (1,6))

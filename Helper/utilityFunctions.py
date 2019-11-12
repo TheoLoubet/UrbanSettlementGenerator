@@ -6,6 +6,7 @@ from pymclevel import alphaMaterials, MCSchematic, MCLevel, BoundingBox
 from mcplatform import *
 from collections import defaultdict
 from AStar import aStar
+from AStar import simpleAStar
 from Matrix import Matrix
 import RNG
 from copy import deepcopy
@@ -225,6 +226,16 @@ def findTerrain(level, x, z, miny, maxy):
 		# print level.blockAt(x,y,z)
 	return -1
 
+def findSimpleTerrain(level, x, z, miny, maxy):
+	blocks = []
+	for y in xrange(maxy-1, miny-1, -1):
+		#print("y: ", y, " block: ", level.blockAt(x, y, z))
+		if level.blockAt(x, y, z) in air_like:
+			continue
+		else:
+			return y
+	return -1
+
 
 # class that allows easy indexing of dicts
 class dotdict(dict):
@@ -329,6 +340,16 @@ def getHeightMap(level, box):
 	#print("Terrain Map: ")
 	#for x in range(0, box.maxx-box.minx):
 	#	print(terrain[x])
+	return terrain
+
+def getSimpleHeightMap(level,box):
+	logging.info("Calculating simple height map...")
+	terrain = [[0 for z in range(box.minz,box.maxz)] for x in range(box.minx,box.maxx)]
+	
+	for d, z in zip(range(box.minz,box.maxz), range(0, box.maxz-box.minz)):
+		for w, x in zip(range(box.minx,box.maxx), range(0, box.maxx-box.minx)):
+			terrain[x][z] = findSimpleTerrain(level, w, d, box.miny, box.maxy)
+
 	return terrain
 
 def getPathMap(height_map, width, depth):
@@ -506,7 +527,7 @@ def getCentralPoint(x_min, x_max, z_min, z_max):
 
 
 
-def getMST_Manhattan(buildings, pathMap, height_map):
+def getMST_Manhattan(buildings):
 	MST = []
 	vertices = []
 	partitions = deepcopy(buildings)
@@ -525,7 +546,7 @@ def getMST_Manhattan(buildings, pathMap, height_map):
 				logging.info("\tp: {}".format(p))				
 				p1 = v.entranceLot
 				p2 = p.entranceLot
-				distance = getManhattanDistance((p1[1],p1[2]), (p2[1],p2[2]))	
+				distance = getManhattanDistance((p1[0],p1[1]), (p2[0],p2[1]))	
 				edges.append((distance, v, p))
 
 		edges = sorted(edges)
@@ -592,19 +613,21 @@ def checkSameHeight(terrain, minx, maxx, minz, maxz, random_x, random_z, mininum
 
 	return True
 
-def preparationMap(matrix, height_map):
-	undesired_block = [(8,0),(9,0),(10,0),(11,0),(17,0),(18,0)]
-	min_height = 255
-	max_height = 0
-	for x in range(0, len(height_map)):
-		for z in range(0, len(height_map[0])):
-			if height_map[x][z] != -1 and height_map[x][z] > max_height:
-				max_height = height_map[x][z]
-			elif height_map[x][z] != -1 and height_map[x][z] < min_height:
-				min_height = height_map[x][z]
-	print(min_height)
-	print(max_height)
+def findBridgeEndPoints(matrix, path, height_map):
+	inWater = False
+	list_bridge_end_points = []
+	for i in range(0, len(path)-1):
 
-	"""for y in range(min_height, max_height+1):
-		for x in range(0, matrix.width):
-			for z in range(0,matrix.depth):"""
+		block = path[i]
+		h = height_map[block[0]][block[1]]
+		next_block = path[i+1]
+		next_h = height_map[next_block[0]][next_block[1]]
+		
+		if inWater == False and matrix.getValue(height_map[next_block[0]][next_block[1]], next_block[0], next_block[1]) in water_like:
+			list_bridge_end_points.append((block[0], block[1]))
+			inWater = True
+		if inWater == True and matrix.getValue(height_map[next_block[0]][next_block[1]], next_block[0], next_block[1]) not in water_like:
+			list_bridge_end_points.append((next_block[0], next_block[1]))
+			inWater = False
+
+	return list_bridge_end_points

@@ -10,6 +10,7 @@ import GenerateHouse
 import GenerateBuilding
 from Earthworks import prepareLot
 import GeneratePath
+import GenerateBridge
 
 # change to INFO if you want a verbose log!
 for handler in logging.root.handlers[:]:
@@ -32,7 +33,7 @@ def perform(level, box, options):
 	world = utilityFunctions.generateMatrix(level, box, width,depth,height)
 	world_space = utilityFunctions.dotdict({"y_min": 0, "y_max": height-1, "x_min": 0, "x_max": width-1, "z_min": 0, "z_max": depth-1})
 	height_map = utilityFunctions.getHeightMap(level,box)
-	utilityFunctions.preparationMap(world, height_map)
+	simple_height_map = utilityFunctions.getSimpleHeightMap(level,box) #no -1 when water block
 	# ==== PARTITIONING OF NEIGHBOURHOODS ==== 
 	(center, neighbourhoods) = generateCenterAndNeighbourhood(world_space, height_map)
 	all_buildings = []
@@ -98,7 +99,7 @@ def perform(level, box, options):
 		logging.info("\t{}".format(p))
 
 	for partition in final_partitioning:
-		building = generateBuilding(world, partition, height_map)
+		building = generateBuilding(world, partition, height_map, simple_height_map)
 		all_buildings.append(building)
 
 	# ==== GENERATING NEIGHBOURHOODS ==== 
@@ -163,31 +164,43 @@ def perform(level, box, options):
 			logging.info("\t{}".format(p))
 
 	for partition in final_partitioning:
-		house = generateHouse(world, partition, height_map)
+		house = generateHouse(world, partition, height_map, simple_height_map)
 		all_buildings.append(house)
+
 
 	# ==== GENERATE PATH MAP  ==== 
  	# generate a path map that gives the cost of moving to each neighbouring cell
 	pathMap = utilityFunctions.getPathMap(height_map, width, depth)
+	simple_pathMap = utilityFunctions.getPathMap(simple_height_map, width, depth) #not affected by water
 
 	# ==== CONNECTING BUILDINGS WITH ROADS  ==== 
 	logging.info("Calling MST on {} buildings".format(len(all_buildings)))
-	MST = utilityFunctions.getMST_Manhattan(all_buildings, pathMap, height_map)
+	MST = utilityFunctions.getMST_Manhattan(all_buildings)
 	
 	pavementBlockID = 1
 	pavementBlockSubtype = 6
 	for m in MST:
 		p1 = m[1]
 		p2 = m[2]
-		logging.info("Pavement with distance {} between {} and {}".format(m[0], p1.entranceLot, p2.entranceLot))
 
-	 	path = utilityFunctions.aStar(p1.entranceLot, p2.entranceLot, pathMap, height_map, all_buildings)
-	 	if path != None:
+	 	simple_path = utilityFunctions.simpleAStar(p1.entranceLot, p2.entranceLot, simple_pathMap, simple_height_map) #water and height are not important
+	 	list_end_points = utilityFunctions.findBridgeEndPoints(world, simple_path, simple_height_map)
+
+	 	if list_end_points != []:
+	 		for i in xrange(0,len(list_end_points),2):
+	 			logging.info("Found water between {} and {}. Generating bridge...".format(list_end_points[i], list_end_points[i+1]))
+	 			GenerateBridge.generateBridge(world, simple_height_map, list_end_points[i], list_end_points[i+1])
+
+	 		list_end_points.insert(0, p1.entranceLot)
+	 		list_end_points.append(p2.entranceLot)
+	 		for i in xrange(0,len(list_end_points),2):
+	 			path = utilityFunctions.aStar(list_end_points[i], list_end_points[i+1], pathMap, height_map)
+	 			logging.info("Found path between {} and {}. Generating road...".format(list_end_points[i], list_end_points[i+1]))
+	 			GeneratePath.generatePath(world, path, height_map, (pavementBlockID, pavementBlockSubtype))
+	 	else:
+	 		path = utilityFunctions.aStar(p1.entranceLot, p2.entranceLot, pathMap, height_map)
 	 		logging.info("Found path between {} and {}. Generating road...".format(p1.entranceLot, p2.entranceLot))
-		 	GeneratePath.generatePath(world, path, height_map, (pavementBlockID, pavementBlockSubtype))
-		else:
-			logging.info("Couldnt find path between {} and {}. Generating a straight road between them...".format(p1.entranceLot, p2.entranceLot))
-	 		GeneratePath.generatePath_StraightLine(world, p1.entranceLot[1], p1.entranceLot[2], p2.entranceLot[1], p2.entranceLot[2], height_map, (pavementBlockID, pavementBlockSubtype))
+			GeneratePath.generatePath(world, path, height_map, (pavementBlockID, pavementBlockSubtype))
 
 	# ==== UPDATE WORLD ====
 	world.updateWorld()
@@ -203,14 +216,15 @@ def generateCenterAndNeighbourhood(space, height_map):
 		logging.info("Generated neighbourhood: {}".format(p))
 	return (center, neighbourhoods)
 
-def generateBuilding(matrix, p, height_map):
+def generateBuilding(matrix, p, height_map, simple_height_map):
 
 	h = prepareLot(matrix, p, height_map)
 	building = GenerateBuilding.generateBuilding(matrix, h, p[1],p[2],p[3], p[4], p[5])
 	utilityFunctions.updateHeightMap(height_map, p[2]+1, p[3]-2, p[4]+1, p[5]-2, -1)
+	utilityFunctions.updateHeightMap(simple_height_map, p[2]+1, p[3]-2, p[4]+1, p[5]-2, -1)
 	return building
 
-def generateHouse(matrix, p, height_map):
+def generateHouse(matrix, p, height_map, simple_height_map):
 	logging.info("Generating a house in lot {}".format(p))
 	logging.info("Terrain before flattening: ")
 	for x in range (p[2], p[3]):
@@ -231,6 +245,7 @@ def generateHouse(matrix, p, height_map):
 	house = GenerateHouse.generateHouse(matrix, h, p[1],p[2],p[3], p[4], p[5])
 	
 	utilityFunctions.updateHeightMap(height_map, p[2]+1, p[3]-1, p[4]+1, p[5]-1, -1)
+	utilityFunctions.updateHeightMap(simple_height_map, p[2]+1, p[3]-1, p[4]+1, p[5]-1, -1)
 
 	logging.info("Terrain after construction: ")
 	for x in range (p[2], p[3]):

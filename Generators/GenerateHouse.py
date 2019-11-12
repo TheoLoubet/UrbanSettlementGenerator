@@ -40,7 +40,7 @@ def generateHouse(matrix, h_min, h_max, x_min, x_max, z_min, z_max, ceiling = No
 		door_x = RNG.randint(house.buildArea.x_min+4, house.buildArea.x_max-4)
 		door_z = house.buildArea.z_min
 		generateDoor(matrix, door_y, door_x, door_z, (64,9), (64,1))
-		house.entranceLot = (h_min+1, door_x, house.lotArea.z_min)
+		house.entranceLot = (door_x, house.lotArea.z_min)
 		# entrance path
 		for z in range(house.lotArea.z_min, door_z):
 			matrix.setValue(h_min,door_x,z, (1,6))
@@ -51,7 +51,7 @@ def generateHouse(matrix, h_min, h_max, x_min, x_max, z_min, z_max, ceiling = No
 		door_x = RNG.randint(house.buildArea.x_min+4, house.buildArea.x_max-4)
 		door_z = house.buildArea.z_max
 		generateDoor(matrix, door_y, door_x, door_z, (64,9), (64,3))
-		house.entranceLot = (h_min+1, door_x, house.lotArea.z_max)
+		house.entranceLot = (door_x, house.lotArea.z_max)
 		# entrance path
 		for z in range(door_z+1, house.lotArea.z_max+1):
 			matrix.setValue(h_min,door_x,z, (1,6))
@@ -62,7 +62,7 @@ def generateHouse(matrix, h_min, h_max, x_min, x_max, z_min, z_max, ceiling = No
 		door_x = house.buildArea.x_min
 		door_z = RNG.randint(house.buildArea.z_min+4, house.buildArea.z_max-4)
 		generateDoor(matrix, door_y, door_x, door_z, (64,8), (64,0))
-		house.entranceLot = (h_min+1, house.lotArea.x_min, door_z) 
+		house.entranceLot = (house.lotArea.x_min, door_z) 
 		# entrance path
 		for x in range(house.lotArea.x_min, door_x):
 			matrix.setValue(h_min,x,door_z, (1,6))
@@ -73,7 +73,7 @@ def generateHouse(matrix, h_min, h_max, x_min, x_max, z_min, z_max, ceiling = No
 		door_x = house.buildArea.x_max
 		door_z = RNG.randint(house.buildArea.z_min+4, house.buildArea.z_max-4)
 		generateDoor(matrix, door_y, door_x, door_z, (64,9), (64,2))
-		house.entranceLot = (h_min+1, house.lotArea.x_max, door_z) 
+		house.entranceLot = (house.lotArea.x_max, door_z) 
 		# entrance path
 		for x in range(door_x+1, house.lotArea.x_max+1):
 			matrix.setValue(h_min,x,door_z, (1,6))
