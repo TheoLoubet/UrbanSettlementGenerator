@@ -613,21 +613,20 @@ def checkSameHeight(terrain, minx, maxx, minz, maxz, random_x, random_z, mininum
 
 	return True
 
-def findBridgeEndPoints(matrix, path, height_map):
+def findBridgeEndPoints(matrix, path, height_map): #find if bridges are needed on a path, if so, return the end points of them
 	inWater = False
 	list_bridge_end_points = []
-	for i in range(0, len(path)-1):
+	for i in range(2, len(path)-2):
 
 		block = path[i]
-		h = height_map[block[0]][block[1]]
-		next_block = path[i+1]
-		next_h = height_map[next_block[0]][next_block[1]]
-		
-		if inWater == False and matrix.getValue(height_map[next_block[0]][next_block[1]], next_block[0], next_block[1]) in water_like:
-			list_bridge_end_points.append((block[0], block[1]))
+		next_2b = path[i+2]
+		before_2b = path[i-2]
+
+		if inWater == False and matrix.getValue(height_map[block[0]][block[1]], block[0], block[1]) in water_like:
+			list_bridge_end_points.append((before_2b[0], before_2b[1]))
 			inWater = True
-		if inWater == True and matrix.getValue(height_map[next_block[0]][next_block[1]], next_block[0], next_block[1]) not in water_like:
-			list_bridge_end_points.append((next_block[0], next_block[1]))
+		if inWater == True and matrix.getValue(height_map[block[0]][block[1]], block[0], block[1]) not in water_like:
+			list_bridge_end_points.append((next_2b[0], next_2b[1]))
 			inWater = False
 
 	return list_bridge_end_points

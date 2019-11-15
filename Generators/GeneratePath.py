@@ -6,10 +6,6 @@ ground_like = [1, 2, 3]
 water_like = [8, 9, 10, 11]
 
 def generatePath(matrix, path, height_map, pavementBlock = (1,6), baseBlock=(3,0)):
-	block = previous_block = path[0]
-	x = block[0]
-	z = block[1]
-	
 	def fillUnderneath(matrix, y, x, z, baseBlock):
 		if y < 0: return
 		block = matrix.getValue(y, x, z)
@@ -172,7 +168,7 @@ def getOrientation(x1, z1, x2, z2):
 	elif z1 > z2: return "N"
 	else: return None
 
-def generateLight(matrix, block_section, path, height_map):
+def generateLight(matrix, block_section, path, height_map): #generate a light by using the center of mass if it is possible
 	(x, z) = computeCenterOfMass(block_section)
 
 	if (x, z) not in path and height_map[x][z] != -1 and matrix.getValue(height_map[x][z]+1,x,z) != 65 and matrix.getValue(height_map[x][z]+1,x,z) != 139: #validity of the center of mass

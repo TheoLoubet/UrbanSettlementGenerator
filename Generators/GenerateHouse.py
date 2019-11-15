@@ -366,7 +366,7 @@ def generateGarden(matrix, house):
 				actual_point = (actual_point[0], actual_point[1] - 1)
 			matrix.setValue(h, actual_point[0], actual_point[1], (85, 0))
 
-	def buildDoorGarden(matrix, house, door_garden_y): #build a doorfor the garden
+	def buildDoorGarden(matrix, house, door_garden_y): #build a door for the garden
 		door_garden_x = int(round((house.gardenPoint2[0] + house.gardenPoint3[0])*0.5))
 		door_garden_z = int(round((house.gardenPoint2[1] + house.gardenPoint3[1])*0.5))
 		if house.gardenOrientation == "N":
