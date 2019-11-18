@@ -19,6 +19,7 @@ To add garden to the house, I find the opposite orientation of the door of the h
 ## Detect water
 
 with a slightly modified A* algorithm, that doesn't take into account water or height, we can generate a simplified path to see if it would be interesting to go on water. When this simplified path is generated, we go through it and we find the coordinates of the points where it goes on water if it does so we can build bridges to connect these points. Then if there are any bridges throughout the path we divide the path so that the bridge is not part of it anymore (so no lantern build on the bridge and no problem with the height of the bridge when we call the A* algorithm that cares about height) and we then generate a new path that connect everything using the non-modified A* algorithm.
--> how to build good looking bridge ?
 
--> separate the 2 a* and the 2 height map into 2 different functions or only one that take a string in argument to see if we want to do the simplified one or not ?
+-> try to simplify the second a* even more
+-> clean the base of the bridge
+-> fix the weird thing that happen at the start (maybe a second for loop ?)
