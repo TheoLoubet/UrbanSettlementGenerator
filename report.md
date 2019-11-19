@@ -23,3 +23,8 @@ with a slightly modified A* algorithm, that doesn't take into account water or h
 -> try to simplify the second a* even more
 -> clean the base of the bridge
 -> fix the weird thing that happen at the start (maybe a second for loop ?)
+
+## Building in moutains
+
+-> how to detect that we're in a moutain
+-> what to build ?
