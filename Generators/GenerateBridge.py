@@ -24,13 +24,16 @@ def generateBridge(matrix, height_map, p1, p2): #generate a bridge between p1 an
 	path_bridge2 = getPathBridge(matrix, p2, middlepoint) #second half
 
 	#check if this bridge is buildable 
-	if h1 + len(path_bridge1)*0.5 >= h_bridge and h2 + len(path_bridge2)*0.5 >= h_bridge:
+	if min(h1,h2) + len(path_bridge1)*0.5 >= h_bridge:
 		#build the bridge
 		buildBridge(matrix, path_bridge1, h_bridge, h1+1, middlepoint, 'y') #we build the pillar in the middle point only once
 		buildBridge(matrix, path_bridge2, h_bridge, h2+1, None, 'y')
 	else: #bridge can't be built that way, going up only from one side
 		path_bridge = getPathBridge(matrix, min_point, max_point) #full bridge
-		buildBridge(matrix, path_bridge, max(h1,h2), h1+1, None, 'n')
+		if min(h1,h2) + len(path_bridge)*0.5 >= max(h1,h2):
+			buildBridge(matrix, path_bridge, max(h1,h2), h1+1, None, 'n')
+		#else:
+			#creuser
 
 def getPathBridge(matrix, p1, p2): #find a path to link p1 to p2
 	path_bridge = []
@@ -52,6 +55,15 @@ def getPathBridge(matrix, p1, p2): #find a path to link p1 to p2
 	return path_bridge
 
 def buildBridge(matrix, path_bridge, h_bridge, h_start, middlepoint, normal_bridge):
+	#build cross in the middle if needed
+	if middlepoint != None:
+		matrix.setValue(h_bridge, middlepoint[0], middlepoint[1], (43,5))
+		matrix.setValue(h_bridge, middlepoint[0]+1, middlepoint[1], (43,5))
+		matrix.setValue(h_bridge, middlepoint[0]-1, middlepoint[1], (43,5))
+		matrix.setValue(h_bridge, middlepoint[0], middlepoint[1]+1, (43,5))
+		matrix.setValue(h_bridge, middlepoint[0], middlepoint[1]-1, (43,5))
+		buildPillar(matrix, h_bridge-1, middlepoint)
+
 	isDemi = True
 	h_actual = h_start
 	barrierPut = False
@@ -77,16 +89,7 @@ def buildBridge(matrix, path_bridge, h_bridge, h_start, middlepoint, normal_brid
 		else:
 			matrix.setValue(h_bridge, path_bridge[i][0], path_bridge[i][1], (43,5))
 
-	#build cross in the middle
-	if middlepoint != None:
-		matrix.setValue(h_bridge, middlepoint[0], middlepoint[1], (43,5))
-		matrix.setValue(h_bridge, middlepoint[0]+1, middlepoint[1], (43,5))
-		matrix.setValue(h_bridge, middlepoint[0]-1, middlepoint[1], (43,5))
-		matrix.setValue(h_bridge, middlepoint[0], middlepoint[1]+1, (43,5))
-		matrix.setValue(h_bridge, middlepoint[0], middlepoint[1]-1, (43,5))
-		buildPillar(matrix, h_bridge-1, middlepoint)
-
-	#extend the bridge on both sides #CHECK IF A TOP SLAB IS PUT ON A BLOCK (AND THAT THE BOTTOM SLAB WASN'T BUILT) and check if a top slab is being built on a bottom slab, replace it by a full block
+	#extend the bridge on both sides
 	isDemi = True
 	h_actual = h_start
 	barrierPut = False
@@ -121,15 +124,15 @@ def buildBridge(matrix, path_bridge, h_bridge, h_start, middlepoint, normal_brid
 				if isDemi == True: #check if we need to put a full block or 2 slabs
 					#search the right way to extend bridge
 					if path_bridge[i][0] != path_bridge[i+1][0]:
-						setIfEmpty(matrix, h_actual, path_bridge[i][0], path_bridge[i][1]-1, (44,8))
-						setIfEmpty(matrix, h_actual+1, path_bridge[i][0], path_bridge[i][1]-1, (44,0))
-						setIfEmpty(matrix, h_actual, path_bridge[i][0], path_bridge[i][1]+1, (44,8))
-						setIfEmpty(matrix, h_actual+1, path_bridge[i][0], path_bridge[i][1]+1, (44,0))
+						if setIfEmpty(matrix, h_actual, path_bridge[i][0], path_bridge[i][1]-1, (44,8)):
+							setIfEmpty(matrix, h_actual+1, path_bridge[i][0], path_bridge[i][1]-1, (44,0))
+						if setIfEmpty(matrix, h_actual, path_bridge[i][0], path_bridge[i][1]+1, (44,8)):
+							setIfEmpty(matrix, h_actual+1, path_bridge[i][0], path_bridge[i][1]+1, (44,0))
 					elif path_bridge[i][1] != path_bridge[i+1][1]:
-						setIfEmpty(matrix, h_actual, path_bridge[i][0]-1, path_bridge[i][1], (44,8))
-						setIfEmpty(matrix, h_actual+1, path_bridge[i][0]-1, path_bridge[i][1], (44,0))
-						setIfEmpty(matrix, h_actual, path_bridge[i][0]+1, path_bridge[i][1], (44,8))
-						setIfEmpty(matrix, h_actual+1, path_bridge[i][0]+1, path_bridge[i][1], (44,0))
+						if setIfEmpty(matrix, h_actual, path_bridge[i][0]-1, path_bridge[i][1], (44,8)):
+							setIfEmpty(matrix, h_actual+1, path_bridge[i][0]-1, path_bridge[i][1], (44,0))
+						if setIfEmpty(matrix, h_actual, path_bridge[i][0]+1, path_bridge[i][1], (44,8)):
+							setIfEmpty(matrix, h_actual+1, path_bridge[i][0]+1, path_bridge[i][1], (44,0))
 					h_actual += 1
 				else:
 					#search the right way to extend bridge
@@ -160,7 +163,10 @@ def buildBridge(matrix, path_bridge, h_bridge, h_start, middlepoint, normal_brid
 						barrierPut = True
 
 def fillUnder(matrix, h, x, z): #put path blocks under the position if there is air
-	#also check if it's a top slab to replace it by a full block
+	#check if the block to fill under is a top slab to replace it by a full block
+	(b, d) = utilityFunctions.getBlockFullValue(matrix, x, h, z)
+	if b == 44 and d in [13, 8]:
+		matrix.setValue(h, x, z, (b-1, d-8))
 	h -= 1
 	while matrix.getValue(h, x, z) in air_like+water_like:
 		matrix.setValue(h, x, z, (1,6))
@@ -172,11 +178,19 @@ def cleanAbove(matrix, h, x, z):
 		matrix.setValue(h, x, z, 0)
 		h += 1
 
-def setIfEmpty(matrix, h, x, z, i): #put block only if the position given or the one under is not occupied by a bridge block (bb)
+def setIfEmpty(matrix, h, x, z, i): #put block only if the position given is correct
 	if matrix.getValue(h, x, z) in air_like:
 		matrix.setValue(h, x, z, i)
-	#also check if it's a bottom slab to replace it by a full block
-
+		#check if the block under is also a bottom slab and replace it with a full block
+		(b, d) = utilityFunctions.getBlockFullValue(matrix, x, h-1, z)
+		if b == 44 and d in [5, 0]:
+			matrix.setValue(h-1, x, z, (b-1, d))
+		return True
+	if i == (44, 13) or i == (44, 8):
+		(b, d) = utilityFunctions.getBlockFullValue(matrix, x, h, z)
+		if b == 44 and d in [0, 5]: #check if we want to put a top slab where there is already a bottom slab and replace it with a full block
+			matrix.setValue(h, x, z, (b-1, d+8))
+			return True
 
 def buildPillar(matrix, h, p): #build a pillar in the water to support the bridge
 	while matrix.getValue(h, p[0], p[1]) in air_like:

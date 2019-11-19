@@ -630,3 +630,14 @@ def findBridgeEndPoints(matrix, path, height_map): #find if bridges are needed o
 			inWater = False
 
 	return list_bridge_end_points
+
+def getBlockFullValue(matrix, x, y, z):
+	if isinstance(matrix.getValue(y, x, z),tuple):
+		return matrix.getValue(y, x, z)
+	else:
+		x = matrix.getWorldX(x)
+		y = matrix.getWorldY(y)
+		z = matrix.getWorldZ(z)
+		block = matrix.level.blockAt(x,y,z)
+		data = matrix.level.blockDataAt(x,y,z)
+		return (block, data)
