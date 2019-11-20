@@ -631,13 +631,13 @@ def findBridgeEndPoints(matrix, path, height_map): #find if bridges are needed o
 
 	return list_bridge_end_points
 
-def getBlockFullValue(matrix, x, y, z):
-	if isinstance(matrix.getValue(y, x, z),tuple):
-		return matrix.getValue(y, x, z)
+def getBlockFullValue(matrix, w, h, d):
+	if isinstance(matrix.getValue(h, w, d),tuple):
+		return matrix.getValue(h, w, d)
 	else:
-		x = matrix.getWorldX(x)
-		y = matrix.getWorldY(y)
-		z = matrix.getWorldZ(z)
+		x = matrix.getWorldX(w)
+		y = matrix.getWorldY(h)
+		z = matrix.getWorldZ(d)
 		block = matrix.level.blockAt(x,y,z)
 		data = matrix.level.blockDataAt(x,y,z)
 		return (block, data)

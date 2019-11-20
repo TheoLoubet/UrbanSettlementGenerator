@@ -15,8 +15,8 @@ def generateBridge(matrix, height_map, p1, p2): #generate a bridge between p1 an
 		min_point = p2
 		max_point = p1
 
-	cleanFundation(matrix, p1, h1, height_map)
-	cleanFundation(matrix, p2, h2, height_map)
+	cleanFundation(matrix, p1, height_map)
+	cleanFundation(matrix, p2, height_map)
 
 	#get the path for the 2 side of the bridge
 	middlepoint = (int((p1[0]+p2[0])/2),(int((p1[1]+p2[1])/2)))
@@ -24,16 +24,22 @@ def generateBridge(matrix, height_map, p1, p2): #generate a bridge between p1 an
 	path_bridge2 = getPathBridge(matrix, p2, middlepoint) #second half
 
 	#check if this bridge is buildable 
-	if min(h1,h2) + len(path_bridge1)*0.5 >= h_bridge:
+	if height_map[min_point[0]][min_point[1]] + len(path_bridge1)*0.5 >= h_bridge:
 		#build the bridge
 		buildBridge(matrix, path_bridge1, h_bridge, h1+1, middlepoint, 'y') #we build the pillar in the middle point only once
 		buildBridge(matrix, path_bridge2, h_bridge, h2+1, None, 'y')
 	else: #bridge can't be built that way, going up only from one side
 		path_bridge = getPathBridge(matrix, min_point, max_point) #full bridge
-		if min(h1,h2) + len(path_bridge)*0.5 >= max(h1,h2):
-			buildBridge(matrix, path_bridge, max(h1,h2), h1+1, None, 'n')
-		#else:
-			#creuser
+		if height_map[min_point[0]][min_point[1]] + len(path_bridge)*0.5 >= height_map[max_point[0]][max_point[1]]:
+			buildBridge(matrix, path_bridge, max(h1,h2), min(h1,h2)+1, None, 'n')
+		else:
+			#dig if height difference still too big
+			while height_map[min_point[0]][min_point[1]] + len(path_bridge)*0.5 < height_map[max_point[0]][max_point[1]]:
+				height_map[max_point[0]][max_point[1]] -= 1
+				print(height_map[min_point[0]][min_point[1]] + len(path_bridge)*0.5)
+				print(height_map[max_point[0]][max_point[1]])
+			cleanFundation(matrix, max_point, height_map)
+			buildBridge(matrix, path_bridge, max(h1,h2), min(h1,h2)+1, None, 'n')
 
 def getPathBridge(matrix, p1, p2): #find a path to link p1 to p2
 	path_bridge = []
@@ -66,7 +72,6 @@ def buildBridge(matrix, path_bridge, h_bridge, h_start, middlepoint, normal_brid
 
 	isDemi = True
 	h_actual = h_start
-	barrierPut = False
 	#start point of the bridge
 	matrix.setValue(h_actual, path_bridge[0][0], path_bridge[0][1], (44,5))
 	fillUnder(matrix, h_actual, path_bridge[0][0], path_bridge[0][1])
@@ -124,14 +129,14 @@ def buildBridge(matrix, path_bridge, h_bridge, h_start, middlepoint, normal_brid
 				if isDemi == True: #check if we need to put a full block or 2 slabs
 					#search the right way to extend bridge
 					if path_bridge[i][0] != path_bridge[i+1][0]:
-						if setIfEmpty(matrix, h_actual, path_bridge[i][0], path_bridge[i][1]-1, (44,8)):
+						if setIfEmpty(matrix, h_actual, path_bridge[i][0], path_bridge[i][1]-1, (44,8)) == True:
 							setIfEmpty(matrix, h_actual+1, path_bridge[i][0], path_bridge[i][1]-1, (44,0))
-						if setIfEmpty(matrix, h_actual, path_bridge[i][0], path_bridge[i][1]+1, (44,8)):
+						if setIfEmpty(matrix, h_actual, path_bridge[i][0], path_bridge[i][1]+1, (44,8)) == True:
 							setIfEmpty(matrix, h_actual+1, path_bridge[i][0], path_bridge[i][1]+1, (44,0))
 					elif path_bridge[i][1] != path_bridge[i+1][1]:
-						if setIfEmpty(matrix, h_actual, path_bridge[i][0]-1, path_bridge[i][1], (44,8)):
+						if setIfEmpty(matrix, h_actual, path_bridge[i][0]-1, path_bridge[i][1], (44,8)) == True:
 							setIfEmpty(matrix, h_actual+1, path_bridge[i][0]-1, path_bridge[i][1], (44,0))
-						if setIfEmpty(matrix, h_actual, path_bridge[i][0]+1, path_bridge[i][1], (44,8)):
+						if setIfEmpty(matrix, h_actual, path_bridge[i][0]+1, path_bridge[i][1], (44,8)) == True:
 							setIfEmpty(matrix, h_actual+1, path_bridge[i][0]+1, path_bridge[i][1], (44,0))
 					h_actual += 1
 				else:
@@ -165,6 +170,7 @@ def buildBridge(matrix, path_bridge, h_bridge, h_start, middlepoint, normal_brid
 def fillUnder(matrix, h, x, z): #put path blocks under the position if there is air
 	#check if the block to fill under is a top slab to replace it by a full block
 	(b, d) = utilityFunctions.getBlockFullValue(matrix, x, h, z)
+	print("fill under {}".format((b,d)))
 	if b == 44 and d in [13, 8]:
 		matrix.setValue(h, x, z, (b-1, d-8))
 	h -= 1
@@ -179,18 +185,17 @@ def cleanAbove(matrix, h, x, z):
 		h += 1
 
 def setIfEmpty(matrix, h, x, z, i): #put block only if the position given is correct
-	if matrix.getValue(h, x, z) in air_like:
+	print("set if empty {}".format(utilityFunctions.getBlockFullValue(matrix, x, h, z)))
+	if i == (44,8) and utilityFunctions.getBlockFullValue(matrix, x, h, z) == (44,0): #check if we put a top slab on a bottom slab
+		matrix.setValue(h, x, z, (43,0))
+		return False
+	elif matrix.getValue(h, x, z) in air_like:
 		matrix.setValue(h, x, z, i)
 		#check if the block under is also a bottom slab and replace it with a full block
-		(b, d) = utilityFunctions.getBlockFullValue(matrix, x, h-1, z)
-		if b == 44 and d in [5, 0]:
-			matrix.setValue(h-1, x, z, (b-1, d))
+		print("set if empty en dessous {}".format(utilityFunctions.getBlockFullValue(matrix, x, h-1, z)))
+		if utilityFunctions.getBlockFullValue(matrix, x, h-1, z) == (44,0):
+			matrix.setValue(h-1, x, z, (43,0))
 		return True
-	if i == (44, 13) or i == (44, 8):
-		(b, d) = utilityFunctions.getBlockFullValue(matrix, x, h, z)
-		if b == 44 and d in [0, 5]: #check if we want to put a top slab where there is already a bottom slab and replace it with a full block
-			matrix.setValue(h, x, z, (b-1, d+8))
-			return True
 
 def buildPillar(matrix, h, p): #build a pillar in the water to support the bridge
 	while matrix.getValue(h, p[0], p[1]) in air_like:
@@ -204,15 +209,15 @@ def buildBarrierX(matrix, h_bridge, path_bridge): #build barrier on the bridge g
 	putLight(matrix, h_bridge, path_bridge[0][0], path_bridge[0][1]-2)
 	putLight(matrix, h_bridge, path_bridge[0][0], path_bridge[0][1]+2)
 	for i in range(1, len(path_bridge)):
-		setIfEmpty(matrix, h_bridge+1, path_bridge[i][0], path_bridge[i][1]-2, 139)
-		setIfEmpty(matrix, h_bridge+1, path_bridge[i][0], path_bridge[i][1]+2, 139)
+		matrix.setValue(h_bridge+1, path_bridge[i][0], path_bridge[i][1]-2, 139)
+		matrix.setValue(h_bridge+1, path_bridge[i][0], path_bridge[i][1]+2, 139)
 
 def buildBarrierZ(matrix, h_bridge, path_bridge): #build barrier on the bridge going through the Z axis
 	putLight(matrix, h_bridge, path_bridge[0][0]-2, path_bridge[0][1])
 	putLight(matrix, h_bridge, path_bridge[0][0]+2, path_bridge[0][1])
 	for i in range(1, len(path_bridge)):
-		setIfEmpty(matrix, h_bridge+1, path_bridge[i][0]-2, path_bridge[i][1], 139)
-		setIfEmpty(matrix, h_bridge+1, path_bridge[i][0]+2, path_bridge[i][1], 139)
+		matrix.setValue(h_bridge+1, path_bridge[i][0]-2, path_bridge[i][1], 139)
+		matrix.setValue(h_bridge+1, path_bridge[i][0]+2, path_bridge[i][1], 139)
 
 def putLight(matrix, h, x, z): #build a light and a pillar under it
 	matrix.setValue(h+1,x,z,(139,0))
@@ -221,8 +226,9 @@ def putLight(matrix, h, x, z): #build a light and a pillar under it
 	matrix.setEntity(h+4, x, z, (178,15), "daylight_detector")
 	buildPillar(matrix, h, (x, z))
 
-def cleanFundation(matrix, p, h, height_map): #clean the endpoints of the bridge
-	for neighbor_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]:
+def cleanFundation(matrix, p, height_map): #clean the endpoints of the bridge
+	h = height_map[p[0]][p[1]]
+	for neighbor_position in [(0, 0), (0, -1), (0, 1), (-1, 0), (1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]:
 		position_to_clean = (p[0] + neighbor_position[0], p[1] + neighbor_position[1])
 		matrix.setValue(h, position_to_clean[0], position_to_clean[1], (1,6))
 		fillUnder(matrix, h, position_to_clean[0], position_to_clean[1])
