@@ -7,11 +7,11 @@ import utilityFunctions as utilityFunctions
 from GenerateCarpet import generateCarpet
 from GenerateObject import *
 
-def generateHouse(matrix, h_min, h_max, x_min, x_max, z_min, z_max, ceiling = None):
+def generateTower(matrix, h_min, h_max, x_min, x_max, z_min, z_max, ceiling = None):
 
-	house = utilityFunctions.dotdict()
-	house.type = "house"
-	house.lotArea = utilityFunctions.dotdict({"y_min": h_min, "y_max": h_max, "x_min": x_min, "x_max": x_max, "z_min": z_min, "z_max": z_max})
+	tower = utilityFunctions.dotdict()
+	tower.type = "tower"
+	tower.lotArea = utilityFunctions.dotdict({"y_min": h_min, "y_max": h_max, "x_min": x_min, "x_max": x_max, "z_min": z_min, "z_max": z_max})
 
 	utilityFunctions.cleanProperty(matrix, h_min+1, h_max, x_min, x_max, z_min, z_max)
 

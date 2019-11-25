@@ -164,17 +164,17 @@ def perform(level, box, options):
 		for p in final_partitioning:
 			logging.info("\t{}".format(p))
 
-	"""for partition in final_partitioning:
+	for partition in final_partitioning:
 		house = generateHouse(world, partition, height_map, simple_height_map)
-		all_buildings.append(house)"""
-
-	for i in xrange(0, len(final_partitioning)-2):
-		house = generateHouse(world, final_partitioning[i], height_map, simple_height_map)
 		all_buildings.append(house)
-	tower = generateTower(world, final_partitioning[len(final_partitioning)-2], height_map, simple_height_map)
-	all_buildings.append(tower)
-	tower = generateTower(world, final_partitioning[len(final_partitioning)-1], height_map, simple_height_map)
-	all_buildings.append(tower)
+
+	"""for i in xrange(0, len(final_partitioning)-2):
+					house = generateHouse(world, final_partitioning[i], height_map, simple_height_map)
+					all_buildings.append(house)
+				tower = generateTower(world, final_partitioning[len(final_partitioning)-2], height_map, simple_height_map)
+				all_buildings.append(tower)
+				tower = generateTower(world, final_partitioning[len(final_partitioning)-1], height_map, simple_height_map)
+				all_buildings.append(tower)"""
 
 
 	# ==== GENERATE PATH MAP  ==== 
