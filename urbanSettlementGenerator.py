@@ -8,9 +8,10 @@ import logging
 from SpacePartitioning import binarySpacePartitioning, quadtreeSpacePartitioning
 import GenerateHouse 
 import GenerateBuilding
-from Earthworks import prepareLot
 import GeneratePath
 import GenerateBridge
+import GenerateTower
+from Earthworks import prepareLot
 
 # change to INFO if you want a verbose log!
 for handler in logging.root.handlers[:]:
@@ -163,9 +164,17 @@ def perform(level, box, options):
 		for p in final_partitioning:
 			logging.info("\t{}".format(p))
 
-	for partition in final_partitioning:
+	"""for partition in final_partitioning:
 		house = generateHouse(world, partition, height_map, simple_height_map)
+		all_buildings.append(house)"""
+
+	for i in xrange(0, len(final_partitioning)-2):
+		house = generateHouse(world, final_partitioning[i], height_map, simple_height_map)
 		all_buildings.append(house)
+	tower = generateTower(world, final_partitioning[len(final_partitioning)-2], height_map, simple_height_map)
+	all_buildings.append(tower)
+	tower = generateTower(world, final_partitioning[len(final_partitioning)-1], height_map, simple_height_map)
+	all_buildings.append(tower)
 
 
 	# ==== GENERATE PATH MAP  ==== 
@@ -255,3 +264,10 @@ def generateHouse(matrix, p, height_map, simple_height_map):
 		logging.info(line)
 
 	return house
+
+def generateTower(matrix, p, height_map, simple_height_map):
+
+	tower = GenerateTower.generateTower(matrix, p[0], p[1],p[2],p[3], p[4], p[5])
+	"""utilityFunctions.updateHeightMap(height_map, p[2]+1, p[3]-2, p[4]+1, p[5]-2, -1)
+				utilityFunctions.updateHeightMap(simple_height_map, p[2]+1, p[3]-2, p[4]+1, p[5]-2, -1)"""
+	return tower
