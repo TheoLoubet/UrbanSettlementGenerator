@@ -173,9 +173,6 @@ def perform(level, box, options):
 		tower = generateTower(world, final_partitioning[i], height_map, simple_height_map)
 		all_buildings.append(tower)
 
-	print(len(final_partitioning))
-
-
 	# ==== GENERATE PATH MAP  ==== 
  	# generate a path map that gives the cost of moving to each neighbouring cell
 	pathMap = utilityFunctions.getPathMap(height_map, width, depth)
