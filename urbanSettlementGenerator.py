@@ -164,17 +164,16 @@ def perform(level, box, options):
 		for p in final_partitioning:
 			logging.info("\t{}".format(p))
 
-	for partition in final_partitioning:
-		house = generateHouse(world, partition, height_map, simple_height_map)
+
+	for i in xrange(0, int(len(final_partitioning)*0.75)+1):
+		house = generateHouse(world, final_partitioning[i], height_map, simple_height_map)
 		all_buildings.append(house)
 
-	"""for i in xrange(0, len(final_partitioning)-2):
-					house = generateHouse(world, final_partitioning[i], height_map, simple_height_map)
-					all_buildings.append(house)
-				tower = generateTower(world, final_partitioning[len(final_partitioning)-2], height_map, simple_height_map)
-				all_buildings.append(tower)
-				tower = generateTower(world, final_partitioning[len(final_partitioning)-1], height_map, simple_height_map)
-				all_buildings.append(tower)"""
+	for i in xrange(int(len(final_partitioning)*0.75)+1, len(final_partitioning)):
+		tower = generateTower(world, final_partitioning[i], height_map, simple_height_map)
+		all_buildings.append(tower)
+
+	print(len(final_partitioning))
 
 
 	# ==== GENERATE PATH MAP  ==== 
@@ -267,7 +266,8 @@ def generateHouse(matrix, p, height_map, simple_height_map):
 
 def generateTower(matrix, p, height_map, simple_height_map):
 
-	tower = GenerateTower.generateTower(matrix, p[0], p[1],p[2],p[3], p[4], p[5])
-	"""utilityFunctions.updateHeightMap(height_map, p[2]+1, p[3]-2, p[4]+1, p[5]-2, -1)
-				utilityFunctions.updateHeightMap(simple_height_map, p[2]+1, p[3]-2, p[4]+1, p[5]-2, -1)"""
+	tower = GenerateTower.generateTower(matrix, p[2], p[3], p[4], p[5], height_map)
+	utilityFunctions.updateHeightMap(height_map, tower.buildArea.x_min, tower.buildArea.x_max, tower.buildArea.z_min, tower.buildArea.z_max, -1)
+	utilityFunctions.updateHeightMap(simple_height_map, tower.buildArea.x_min, tower.buildArea.x_max, tower.buildArea.z_min, tower.buildArea.z_max, -1)
+
 	return tower
