@@ -31,3 +31,7 @@ While building in the neighborhood, instead of building only houses, we build to
 
 -> add things inside tower
 -> remove tree ? pre treatment of the map ?
+-> change function of score of flatness (number of occurence of each height) (Use the medium of all the height to see if it's a hole or a moutain)
+-> craft bench/furnace inside
+-> if house next to it ?
+-> check inside of the partition where the score is the lowest to build the tower on it
