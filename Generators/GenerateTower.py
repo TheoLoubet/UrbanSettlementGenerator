@@ -23,8 +23,7 @@ def generateTower(matrix, x_min, x_max, z_min, z_max, height_map):
 	wall = (45,0)
 	floor = wall
 
-	generateWalls(matrix, min_h, h_tower, x_min, x_max, z_min, z_max, wall)
-	generateFloor(matrix, min_h, x_min, x_max, z_min, z_max, floor)
+	generateWalls(matrix, min_h+1, h_tower, x_min, x_max, z_min, z_max, wall)
 	generateCeiling(matrix, h_tower, x_min, x_max, z_min, z_max)
 
 	(door_pos, door_y, tower.orientation) = getOrientation(matrix, tower.buildArea, height_map)
@@ -39,7 +38,7 @@ def generateTower(matrix, x_min, x_max, z_min, z_max, height_map):
 	elif tower.orientation == "S":
 		door_x = door_pos[0]
 		door_z = door_pos[1]
-		generateDoor(matrix, door_y, door_x, door_z, (64,9), (64,3))
+		generateDoor(matrix, door_y, door_x, door_z, (64,9), (64,2))
 		tower.entranceLot = (door_x, door_z+1)
 		matrix.setValue(door_y-1,door_x,door_z+1, (1,6))
 
@@ -57,47 +56,62 @@ def generateTower(matrix, x_min, x_max, z_min, z_max, height_map):
 		tower.entranceLot = (door_x+1, door_z) 
 		matrix.setValue(door_y-1,door_x+1,door_z, (1,6))
 
+	generateFloor(matrix, door_y-1, x_min, x_max, z_min, z_max, floor)
+	generateInside(matrix, door_y, h_tower, x_min, x_max, z_min, z_max, tower.orientation)
+
 	return tower
 
 def getTowerAreaInsideLot(x_min, x_max, z_min, z_max, height_map):
-	tower_size_x = random.choice([5, 7])
-	tower_size_z = tower_size_x
+	tower_size = random.choice([5, 7])
 	min_h = 255
 	max_h = 0
+	#fixing base buildArea
+	bx_min = x_min+1
+	bx_max = bx_min+tower_size-1
+	bz_min = z_min+1
+	bz_max = bz_min+tower_size-1
+	#get base score for this area
+	score_buildArea = utilityFunctions.getScoreArea_type1(height_map, bx_min, bx_max, bz_min, bz_max)
 
-	if x_max-x_min > tower_size_x:
-		x_mid = x_min + (x_max-x_min)/2
-		x_min = x_mid - tower_size_x/2
-		x_max = x_mid + tower_size_x/2
+	#check every other possible area in the parcel to find if there is an area with a worse flatness score
+	for x in range(x_min+1, x_max-tower_size+1):
+		for z in range(z_min+1, z_max-tower_size+1):
+			nx_min = x
+			nx_max = x + tower_size-1
+			nz_min = z
+			nz_max = z + tower_size-1
+			new_score_buildArea = utilityFunctions.getScoreArea_type1(height_map, nx_min, nx_max, nz_min, nz_max)
+			if new_score_buildArea > score_buildArea:
+				bx_min = nx_min
+				bx_max = nx_max
+				bz_min = nz_min
+				bz_max = nz_max
+				score_buildArea = new_score_buildArea
 
-	if z_max-z_min > tower_size_z:
-		z_mid = z_min + (z_max-z_min)/2
-		z_min = z_mid - tower_size_z/2
-		z_max = z_mid + tower_size_z/2
 
-	for x in range(x_min-1, x_max+2):
-		if height_map[x][z_max+1] < min_h:
-			min_h = height_map[x][z_max+1]
-		if height_map[x][z_max+1] > max_h:
-			max_h = height_map[x][z_max+1]
-		if height_map[x][z_min-1] < min_h:
-			min_h = height_map[x][z_min-1]
-		if height_map[x][z_min-1] > max_h:
-			max_h = height_map[x][z_min-1]
+	for x in range(bx_min-1, bx_max+2):
+		if height_map[x][bz_max+1] < min_h:
+			min_h = height_map[x][bz_max+1]
+		if height_map[x][bz_max+1] > max_h:
+			max_h = height_map[x][bz_max+1]
+		if height_map[x][bz_min-1] < min_h:
+			min_h = height_map[x][bz_min-1]
+		if height_map[x][bz_min-1] > max_h:
+			max_h = height_map[x][bz_min-1]
 
-	for z in range(z_min-1, z_max++2):
-		if height_map[x_max+1][z] < min_h:
-			min_h = height_map[x_max+1][z]
-		if height_map[x_max+1][z] > max_h:
-			max_h = height_map[x_max+1][z]
-		if height_map[x_min-1][z] < min_h:
-			min_h = height_map[x_min-1][z]
-		if height_map[x_min-1][z] > max_h:
-			max_h = height_map[x_min-1][z]
+	for z in range(bz_min-1, bz_max+2):
+		if height_map[bx_max+1][z] < min_h:
+			min_h = height_map[bx_max+1][z]
+		if height_map[bx_max+1][z] > max_h:
+			max_h = height_map[bx_max+1][z]
+		if height_map[bx_min-1][z] < min_h:
+			min_h = height_map[bx_min-1][z]
+		if height_map[bx_min-1][z] > max_h:
+			max_h = height_map[bx_min-1][z]
 
 	h_tower = max_h + 3 + RNG.randint(1,6)
 
-	return (h_tower, min_h, max_h, x_min, x_max, z_min, z_max)
+	return (h_tower, min_h, max_h, bx_min, bx_max, bz_min, bz_max)
 
 def generateFloor(matrix, h, x_min, x_max, z_min, z_max, floor):
 	for x in range(x_min, x_max+1):
@@ -182,3 +196,137 @@ def generateCeiling(matrix, h, x_min, x_max, z_min, z_max):
 	else:
 		matrix.setValue(h,x_min-1+i,z_max+1-i, (44,4))
 
+def generateInside(matrix, h_min, h_tower, x_min, x_max, z_min, z_max, orientation):
+	h_actual = h_min
+
+	if orientation == "S":
+		x_actual = x_min+1
+		z_actual = z_max-1
+		while h_actual != h_tower - 1.0:
+			while (x_actual, z_actual) != (x_min+1, z_min+1) and h_actual != h_tower - 1.0: #to bot left
+				if h_actual%1 != 0:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+				else:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+				h_actual += 0.5
+				z_actual -= 1
+			while (x_actual, z_actual) != (x_max-1, z_min+1) and h_actual != h_tower - 1.0: #to top left
+				if h_actual%1 != 0:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+				else:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+				h_actual += 0.5
+				x_actual += 1
+			while (x_actual, z_actual) != (x_max-1, z_max-1) and h_actual != h_tower - 1.0: #to top right
+				if h_actual%1 != 0:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+				else:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+				h_actual += 0.5
+				z_actual += 1
+			while (x_actual, z_actual) != (x_min+1, z_max-1) and h_actual != h_tower - 1.0: #to bot right
+				if h_actual%1 != 0:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+				else:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+				h_actual += 0.5
+				x_actual -= 1
+
+	elif orientation == "N":
+		x_actual = x_max-1
+		z_actual = z_min+1
+		while h_actual != h_tower - 1.0:
+			while (x_actual, z_actual) != (x_max-1, z_max-1) and h_actual != h_tower - 1.0: #to top right
+				if h_actual%1 != 0:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+				else:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+				h_actual += 0.5
+				z_actual += 1
+			while (x_actual, z_actual) != (x_min+1, z_max-1) and h_actual != h_tower - 1.0: #to bot right
+				if h_actual%1 != 0:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+				else:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+				h_actual += 0.5
+				x_actual -= 1
+			while (x_actual, z_actual) != (x_min+1, z_min+1) and h_actual != h_tower - 1.0: #to bot left
+				if h_actual%1 != 0:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+				else:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+				h_actual += 0.5
+				z_actual -= 1
+			while (x_actual, z_actual) != (x_max-1, z_min+1) and h_actual != h_tower - 1.0: #to top left
+				if h_actual%1 != 0:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+				else:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+				h_actual += 0.5
+				x_actual += 1
+
+	elif orientation == "E":
+		x_actual = x_max-1
+		z_actual = z_max-1
+		while h_actual != h_tower - 1.0:
+			while (x_actual, z_actual) != (x_min+1, z_max-1) and h_actual != h_tower - 1.0: #to bot right
+				if h_actual%1 != 0:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+				else:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+				h_actual += 0.5
+				x_actual -= 1
+			while (x_actual, z_actual) != (x_min+1, z_min+1) and h_actual != h_tower - 1.0: #to bot left
+				if h_actual%1 != 0:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+				else:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+				h_actual += 0.5
+				z_actual -= 1
+			while (x_actual, z_actual) != (x_max-1, z_min+1) and h_actual != h_tower - 1.0: #to top left
+				if h_actual%1 != 0:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+				else:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+				h_actual += 0.5
+				x_actual += 1
+			while (x_actual, z_actual) != (x_max-1, z_max-1) and h_actual != h_tower - 1.0: #to top right
+				if h_actual%1 != 0:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+				else:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+				h_actual += 0.5
+				z_actual += 1
+
+	else:
+		x_actual = x_min+1
+		z_actual = z_min+1
+		while h_actual != h_tower - 1.0:
+			while (x_actual, z_actual) != (x_max-1, z_min+1) and h_actual != h_tower - 1.0: #to top left
+				if h_actual%1 != 0:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+				else:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+				h_actual += 0.5
+				x_actual += 1
+			while (x_actual, z_actual) != (x_max-1, z_max-1) and h_actual != h_tower - 1.0: #to top right
+				if h_actual%1 != 0:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+				else:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+				h_actual += 0.5
+				z_actual += 1
+			while (x_actual, z_actual) != (x_min+1, z_max-1) and h_actual != h_tower - 1.0: #to bot right
+				if h_actual%1 != 0:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+				else:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+				h_actual += 0.5
+				x_actual -= 1
+			while (x_actual, z_actual) != (x_min+1, z_min+1) and h_actual != h_tower - 1.0: #to bot left
+				if h_actual%1 != 0:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+				else:
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+				h_actual += 0.5
+				z_actual -= 1

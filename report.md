@@ -16,7 +16,7 @@ To add garden to the house, I find the opposite orientation of the door of the h
 -> put things in garden ?
 
 
-## Detect water
+## Bridge
 
 with a slightly modified A* algorithm, that doesn't take into account water or height, we can generate a simplified path to see if it would be interesting to go on water. When this simplified path is generated, we go through it and we find the coordinates of the points where it goes on water if it does so we can build bridges to connect these points. Then if there are any bridges throughout the path we divide the path so that the bridge is not part of it anymore (so no lantern build on the bridge and no problem with the height of the bridge when we call the A* algorithm that cares about height) and we then generate a new path that connect everything using the non-modified A* algorithm.
 
@@ -29,9 +29,7 @@ Now that we're sure that the bridge is buildable, we alternate between bottom sl
 
 While building in the neighborhood, instead of building only houses, we build towers on 25% of the partitions that have the worst flatness score. The tower is built randomly inside the partition, which is not flattened before building. Once we have the position of the tower, we check around it to have the lowest and highest height of the block around, which will determine the height of the tower. To build the door, we compare the middle point of each side and we build the door on the one that is the lowest.
 
--> add things inside tower
+-> add things inside tower (stairs, need plateform on the top with furnace etc..)
 -> remove tree ? pre treatment of the map ?
 -> change function of score of flatness (number of occurence of each height) (Use the medium of all the height to see if it's a hole or a moutain)
--> craft bench/furnace inside
--> if house next to it ?
--> check inside of the partition where the score is the lowest to build the tower on it
+-> check inside of the partition where the score is the lowest to build the tower on it __V
