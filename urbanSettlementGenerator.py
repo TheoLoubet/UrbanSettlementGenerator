@@ -35,6 +35,7 @@ def perform(level, box, options):
 	world_space = utilityFunctions.dotdict({"y_min": 0, "y_max": height-1, "x_min": 0, "x_max": width-1, "z_min": 0, "z_max": depth-1})
 	height_map = utilityFunctions.getHeightMap(level,box)
 	simple_height_map = utilityFunctions.getSimpleHeightMap(level,box) #no -1 when water block
+	height_medium = utilityFunctions.getMediumHeight(simple_height_map) #get the medium height of the map
 	# ==== PARTITIONING OF NEIGHBOURHOODS ==== 
 	(center, neighbourhoods) = generateCenterAndNeighbourhood(world_space, height_map)
 	all_buildings = []
@@ -74,7 +75,7 @@ def perform(level, box, options):
 				if cond1 == False: failed_conditions.append(1) 
 				cond2 = utilityFunctions.hasMinimumSize(y_min, y_max, x_min, x_max,z_min,z_max, minimum_h, minimum_w, mininum_d)
 				if cond2 == False: failed_conditions.append(2) 
-				cond3 = utilityFunctions.hasAcceptableSteepness(x_min, x_max,z_min,z_max, height_map, utilityFunctions.getScoreArea_type1, threshold)
+				cond3 = utilityFunctions.hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, utilityFunctions.getScoreArea_type1, threshold)
 				if cond3 == False: failed_conditions.append(3) 
 				if cond1 and cond2 and cond3:
 					score = utilityFunctions.getScoreArea_type1(height_map, x_min, x_max, z_min, z_max)
@@ -132,15 +133,17 @@ def perform(level, box, options):
 				valid_partitioning = []
 				for p in partitioning:
 					(y_min, y_max, x_min, x_max, z_min, z_max) = (p[0], p[1], p[2], p[3], p[4], p[5])
+					p_medium = getMediumHeightArea(x_min, x_max, z_min, z_max, simple_height_map)
 					failed_conditions = [] 
 					cond1 = utilityFunctions.hasValidGroundBlocks(x_min, x_max,z_min,z_max, height_map)
 					if cond1 == False: failed_conditions.append(1) 
 					cond2 = utilityFunctions.hasMinimumSize(y_min, y_max, x_min, x_max,z_min,z_max, minimum_h, minimum_w, mininum_d)
 					if cond2 == False: failed_conditions.append(2) 
-					cond3 = utilityFunctions.hasAcceptableSteepness(x_min, x_max,z_min,z_max, height_map, utilityFunctions.getScoreArea_type1, threshold)
+					cond3 = utilityFunctions.hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, utilityFunctions.getScoreArea_type1, threshold)
 					if cond3 == False: failed_conditions.append(3) 
 					if cond1 and cond2 and cond3:
 						score = utilityFunctions.getScoreArea_type1(height_map, x_min, x_max, z_min, z_max)
+						#utilityFunctions.getScoreArea_type4(height_map, x_min, x_max, z_min, z_max, p_medium)
 						valid_partitioning.append((score, p))
 						logging.info("Passed the 3 conditions!")
 					else:

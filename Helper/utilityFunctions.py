@@ -320,7 +320,7 @@ def hasMinimumSize(y_min, y_max, x_min, x_max,z_min,z_max, minimum_h=4, minimum_
 
 # Return true if a given partition has an acceptable steepness
 # according to the a scoring function and a threshold
-def hasAcceptableSteepness(x_min, x_max,z_min,z_max, height_map, scoring_function, threshold = 5):
+def hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, scoring_function, threshold = 5):
 	initial_value = height_map[x_min][z_min]
 	score = scoring_function(height_map, x_min, x_max, z_min , z_max , initial_value)
 	if score > threshold:
@@ -430,9 +430,48 @@ def getScoreArea_type3(height_map, min_x, max_x, min_z, max_z, initial_value=Non
 	value = 0
 	for x in range(min_x, max_x+1):
 		for z in range(min_z, max_z+1):
-
 			value += (abs(initial_value - height_map[x][z]))**2
   	return value
+
+def getScoreArea_type4(height_map, min_x, max_x, min_z, max_z, height_medium):
+	list_height = []
+	for x in range(min_x, max_x+1):
+		for z in range(min_z, max_z+1):
+			list_height.append(height_map[x][z])
+	print("list height : {}".format(list_height))
+	list_height_nb_occurence = []
+	for v in range(min(list_height), max(list_height)):
+		list_height_nb_occurence.append((v, list_height.count(v)))
+	print("list height, nb occurence : {}".format(list_height_nb_occurence))
+	list_cost_per_height = []
+	for v, n in list_height_nb_occurence:
+		list_cost_per_height.append((v, n, n*(v-height_medium)))
+	print("list height, n, cost : {}".format(list_cost_per_height))
+	list_cost_percentage = []
+	for v, n, c in list_cost_per_height:
+		list_cost_percentage.append((n, c, ((100-(n*100/((max_x-min_x)*(max_z-min_z))))*c)/100))
+	print("list n, c, costpercentage : {}".format(list_cost_percentage))
+	score = 0
+	for n, c, v in list_cost_percentage:
+		score += v
+	print("total score : {}".format(score))
+	return score
+
+def getMediumHeight(height_map):
+	sum_height = 0
+	for l in height_map:
+		for h in l:
+			sum_height += h
+	medium = sum_height/(len(height_map)*len(height_map[0]))
+	return medium
+
+def getMediumHeightArea(x_min, x_max, z_min, z_max, height_map):
+	sum_height = 0
+	for x in range(x_min,x_max+1):
+		for z in range(z_min, z_max+1)
+			sum_height += height_map[x][z]
+	medium = sum_height/((x_max-x_min)*(z_max-z_min))
+	return medium
 
 def getHeightCounts(matrix, min_x, max_x, min_z, max_z):
 	flood_values = {}

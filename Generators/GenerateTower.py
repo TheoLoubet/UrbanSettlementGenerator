@@ -117,6 +117,9 @@ def generateFloor(matrix, h, x_min, x_max, z_min, z_max, floor):
 	for x in range(x_min, x_max+1):
 		for z in range(z_min, z_max+1):
 			matrix.setValue(h,x,z,floor)
+	x_mid = int((x_max - x_min)/2)
+	z_mid = int((z_max - z_min)/2)
+	matrix.setValue(h+1,x_mid,z_mid,(89,0))
 
 def generateWalls(matrix, h_min, h_tower, x_min, x_max, z_min, z_max, wall):
 
@@ -198,39 +201,47 @@ def generateCeiling(matrix, h, x_min, x_max, z_min, z_max):
 
 def generateInside(matrix, h_min, h_tower, x_min, x_max, z_min, z_max, orientation):
 	h_actual = h_min
+	x_mid = int((x_min+x_max)*0.5)
+	z_mid = int((z_min+z_max)*0.5)
 
 	if orientation == "S":
 		x_actual = x_min+1
 		z_actual = z_max-1
-		while h_actual != h_tower - 1.0:
+		while h_actual != h_tower - 1.0: #generate the stairs going up the tower depending on its orientation
 			while (x_actual, z_actual) != (x_min+1, z_min+1) and h_actual != h_tower - 1.0: #to bot left
 				if h_actual%1 != 0:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,10))
 				else:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,2))
 				h_actual += 0.5
 				z_actual -= 1
 			while (x_actual, z_actual) != (x_max-1, z_min+1) and h_actual != h_tower - 1.0: #to top left
 				if h_actual%1 != 0:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,10))
 				else:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,2))
 				h_actual += 0.5
 				x_actual += 1
 			while (x_actual, z_actual) != (x_max-1, z_max-1) and h_actual != h_tower - 1.0: #to top right
 				if h_actual%1 != 0:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,10))
 				else:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,2))
 				h_actual += 0.5
 				z_actual += 1
 			while (x_actual, z_actual) != (x_min+1, z_max-1) and h_actual != h_tower - 1.0: #to bot right
 				if h_actual%1 != 0:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,10))
 				else:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,2))
 				h_actual += 0.5
 				x_actual -= 1
+		#chest and furnace
+		matrix.setEntity(h_min, x_max-1, z_min+1, (54,3), "chest")
+		matrix.setEntity(h_min, x_max-2, z_min+1, (61,3), "furnace")
+		#plateform
+		buildPlatform(matrix, int(h_actual)-1, x_actual, z_actual)
+
 
 	elif orientation == "N":
 		x_actual = x_max-1
@@ -238,32 +249,35 @@ def generateInside(matrix, h_min, h_tower, x_min, x_max, z_min, z_max, orientati
 		while h_actual != h_tower - 1.0:
 			while (x_actual, z_actual) != (x_max-1, z_max-1) and h_actual != h_tower - 1.0: #to top right
 				if h_actual%1 != 0:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,10))
 				else:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,2))
 				h_actual += 0.5
 				z_actual += 1
 			while (x_actual, z_actual) != (x_min+1, z_max-1) and h_actual != h_tower - 1.0: #to bot right
 				if h_actual%1 != 0:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,10))
 				else:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,2))
 				h_actual += 0.5
 				x_actual -= 1
 			while (x_actual, z_actual) != (x_min+1, z_min+1) and h_actual != h_tower - 1.0: #to bot left
 				if h_actual%1 != 0:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,10))
 				else:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,2))
 				h_actual += 0.5
 				z_actual -= 1
 			while (x_actual, z_actual) != (x_max-1, z_min+1) and h_actual != h_tower - 1.0: #to top left
 				if h_actual%1 != 0:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,10))
 				else:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,2))
 				h_actual += 0.5
 				x_actual += 1
+		matrix.setEntity(h_min, x_min+1, z_max-1, (54,2), "chest")
+		matrix.setEntity(h_min, x_min+2, z_max-1, (61,2), "furnace")
+		buildPlatform(matrix, int(h_actual)-1, x_actual, z_actual)
 
 	elif orientation == "E":
 		x_actual = x_max-1
@@ -271,32 +285,35 @@ def generateInside(matrix, h_min, h_tower, x_min, x_max, z_min, z_max, orientati
 		while h_actual != h_tower - 1.0:
 			while (x_actual, z_actual) != (x_min+1, z_max-1) and h_actual != h_tower - 1.0: #to bot right
 				if h_actual%1 != 0:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,10))
 				else:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,2))
 				h_actual += 0.5
 				x_actual -= 1
 			while (x_actual, z_actual) != (x_min+1, z_min+1) and h_actual != h_tower - 1.0: #to bot left
 				if h_actual%1 != 0:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,10))
 				else:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,2))
 				h_actual += 0.5
 				z_actual -= 1
 			while (x_actual, z_actual) != (x_max-1, z_min+1) and h_actual != h_tower - 1.0: #to top left
 				if h_actual%1 != 0:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,10))
 				else:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,2))
 				h_actual += 0.5
 				x_actual += 1
 			while (x_actual, z_actual) != (x_max-1, z_max-1) and h_actual != h_tower - 1.0: #to top right
 				if h_actual%1 != 0:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,10))
 				else:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,2))
 				h_actual += 0.5
 				z_actual += 1
+		matrix.setEntity(h_min, x_min+1, z_min+1, (54,5), "chest")
+		matrix.setEntity(h_min, x_min+1, z_min+2, (61,5), "furnace")
+		buildPlatform(matrix, int(h_actual)-1, x_actual, z_actual)
 
 	else:
 		x_actual = x_min+1
@@ -304,29 +321,58 @@ def generateInside(matrix, h_min, h_tower, x_min, x_max, z_min, z_max, orientati
 		while h_actual != h_tower - 1.0:
 			while (x_actual, z_actual) != (x_max-1, z_min+1) and h_actual != h_tower - 1.0: #to top left
 				if h_actual%1 != 0:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,10))
 				else:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,2))
 				h_actual += 0.5
 				x_actual += 1
 			while (x_actual, z_actual) != (x_max-1, z_max-1) and h_actual != h_tower - 1.0: #to top right
 				if h_actual%1 != 0:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,10))
 				else:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,2))
 				h_actual += 0.5
 				z_actual += 1
 			while (x_actual, z_actual) != (x_min+1, z_max-1) and h_actual != h_tower - 1.0: #to bot right
 				if h_actual%1 != 0:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,10))
 				else:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,2))
 				h_actual += 0.5
 				x_actual -= 1
 			while (x_actual, z_actual) != (x_min+1, z_min+1) and h_actual != h_tower - 1.0: #to bot left
 				if h_actual%1 != 0:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,12))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,10))
 				else:
-					matrix.setValue(int(h_actual),x_actual,z_actual, (44,4))
+					matrix.setValue(int(h_actual),x_actual,z_actual, (44,2))
 				h_actual += 0.5
 				z_actual -= 1
+		matrix.setEntity(h_min, x_max-1, z_max-1, (54,4), "chest")
+		matrix.setEntity(h_min, x_max-1, z_max-2, (61,4), "furnace")
+		buildPlatform(matrix, int(h_actual)-1, x_actual, z_actual)
+
+	#light
+	matrix.setValue(h_min-1,x_mid,z_mid, (89,0))
+	#windows
+	matrix.setValue(h_tower,x_mid,z_max, (20,0))
+	matrix.setValue(h_tower,x_mid,z_min, (20,0))
+	matrix.setValue(h_tower,x_max,z_mid, (20,0))
+	matrix.setValue(h_tower,x_min,z_mid, (20,0))
+
+def buildPlatform(matrix, h, x_actual, z_actual):
+	anvil = False
+	craftingTable = False
+	light = False
+	for neighbor_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1), (0, 0)]:
+		new_position = (x_actual + neighbor_position[0], z_actual + neighbor_position[1])
+		if utilityFunctions.getBlockFullValue(matrix, new_position[0], h, new_position[1]) == (0,0):
+			matrix.setValue(h, new_position[0], new_position[1], (44,10))
+			if craftingTable == False:
+				matrix.setValue(h+1, new_position[0], new_position[1], (58,0))
+				craftingTable = True
+			elif light == False:
+				matrix.setValue(h+1, new_position[0], new_position[1], (50,5))
+				light = True
+			elif anvil == False:
+				matrix.setValue(h+1, new_position[0], new_position[1], (145,0))
+				anvil = True
