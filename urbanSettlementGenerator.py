@@ -35,7 +35,6 @@ def perform(level, box, options):
 	world_space = utilityFunctions.dotdict({"y_min": 0, "y_max": height-1, "x_min": 0, "x_max": width-1, "z_min": 0, "z_max": depth-1})
 	height_map = utilityFunctions.getHeightMap(level,box)
 	simple_height_map = utilityFunctions.getSimpleHeightMap(level,box) #no -1 when water block
-	height_medium = utilityFunctions.getMediumHeight(simple_height_map) #get the medium height of the map
 	# ==== PARTITIONING OF NEIGHBOURHOODS ==== 
 	(center, neighbourhoods) = generateCenterAndNeighbourhood(world_space, height_map)
 	all_buildings = []
@@ -118,7 +117,7 @@ def perform(level, box, options):
 	threshold = 1
 	partitioning_list = []
 	final_partitioning = []
-	
+
 	while available_lots < minimum_lots and current_try < maximum_tries:
 		partitioning_list = []
 		for i in range(iterate):
@@ -133,7 +132,6 @@ def perform(level, box, options):
 				valid_partitioning = []
 				for p in partitioning:
 					(y_min, y_max, x_min, x_max, z_min, z_max) = (p[0], p[1], p[2], p[3], p[4], p[5])
-					p_medium = getMediumHeightArea(x_min, x_max, z_min, z_max, simple_height_map)
 					failed_conditions = [] 
 					cond1 = utilityFunctions.hasValidGroundBlocks(x_min, x_max,z_min,z_max, height_map)
 					if cond1 == False: failed_conditions.append(1) 
@@ -143,7 +141,6 @@ def perform(level, box, options):
 					if cond3 == False: failed_conditions.append(3) 
 					if cond1 and cond2 and cond3:
 						score = utilityFunctions.getScoreArea_type1(height_map, x_min, x_max, z_min, z_max)
-						#utilityFunctions.getScoreArea_type4(height_map, x_min, x_max, z_min, z_max, p_medium)
 						valid_partitioning.append((score, p))
 						logging.info("Passed the 3 conditions!")
 					else:
@@ -167,6 +164,20 @@ def perform(level, box, options):
 		for p in final_partitioning:
 			logging.info("\t{}".format(p))
 
+	list_score = []
+	for p in final_partitioning:
+		score4 = utilityFunctions.getScoreArea_type4(height_map, p[2], p[3], p[4], p[5])
+		list_score.append(score4)
+
+	fichier = open("data.csv", 'a')
+	for v in range(min(list_score), max(list_score)):
+		nb_occurence = list_score.count(v)
+		if nb_occurence != 0:
+			fichier.write(str(v))
+			fichier.write(';')
+			fichier.write(str(nb_occurence))
+			fichier.write('\n')
+	fichier.close
 
 	for i in xrange(0, int(len(final_partitioning)*0.75)+1):
 		house = generateHouse(world, final_partitioning[i], height_map, simple_height_map)

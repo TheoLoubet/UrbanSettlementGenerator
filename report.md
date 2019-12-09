@@ -24,6 +24,7 @@ To build a bridge, we first generate a path that connects the end points of the 
 Now that we're sure that the bridge is buildable, we alternate between bottom slab and top slab to build it, and we fill the side when it's possible. Finally, if the bridge is build like an arc, we add some lights and barriers and support (that we can't build if it's an other type of bridge because it wouldn't look good).
 
 -> fix the weird thing that happen with the slabs
+-> change the bridge when it's too short
 
 ## Building in moutains
 
