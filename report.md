@@ -25,6 +25,7 @@ Now that we're sure that the bridge is buildable, we alternate between bottom sl
 
 -> fix the weird thing that happen with the slabs
 -> change the bridge when it's too short
+-> if the number of bridge end point is not pair don't build bridges
 
 ## Building in moutains
 

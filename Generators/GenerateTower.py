@@ -13,10 +13,10 @@ def generateTower(matrix, x_min, x_max, z_min, z_max, height_map):
 	tower.type = "tower"
 
 	(h_tower, min_h, max_h, x_min, x_max, z_min, z_max) = getTowerAreaInsideLot(x_min, x_max, z_min, z_max, height_map)
-	cleanTowerArea(matrix, min_h, h_tower, x_min, x_max, z_min, z_max)
 
 	tower.buildArea = utilityFunctions.dotdict({"y_min": min_h, "y_max": h_tower, "x_min": x_min, "x_max": x_max, "z_min": z_min, "z_max": z_max})
-	
+	(door_pos, door_y, tower.orientation) = getOrientationT(matrix, tower.buildArea, height_map)
+	cleanTowerArea(matrix, door_y-1, h_tower+3, x_min, x_max, z_min, z_max)
 
 	logging.info("Generating tower at area {}".format(tower.buildArea))
 	
@@ -26,7 +26,6 @@ def generateTower(matrix, x_min, x_max, z_min, z_max, height_map):
 	generateWalls(matrix, min_h+1, h_tower, x_min, x_max, z_min, z_max, wall)
 	generateCeiling(matrix, h_tower, x_min, x_max, z_min, z_max)
 
-	(door_pos, door_y, tower.orientation) = getOrientationT(matrix, tower.buildArea, height_map)
 	
 	if tower.orientation == "N":
 		door_x = door_pos[0]
@@ -376,7 +375,7 @@ def generateInside(matrix, h_min, h_tower, x_min, x_max, z_min, z_max, orientati
 					matrix.setValue(int(h_actual),x_actual,z_actual, (44,2))
 				h_actual += 0.5
 				z_actual -= 1
-			if (x_actual, z_actual) == (x_min+1, z_min+1) and h_actual != h_tower - 1.0 - 1.0:
+			if (x_actual, z_actual) == (x_min+1, z_min+1) and h_actual != h_tower - 1.0:
 				putLightT(matrix, int(h_actual), x_actual, z_actual)
 		matrix.setEntity(h_min, x_max-1, z_max-1, (54,4), "chest")
 		matrix.setEntity(h_min, x_max-1, z_max-2, (61,4), "furnace")
@@ -404,6 +403,26 @@ def buildPlatform(matrix, h, x_actual, z_actual):
 			elif anvil == False:
 				matrix.setValue(h+1, new_position[0], new_position[1], (145,0))
 				anvil = True
+			elif light == False:
+				matrix.setValue(h+1, new_position[0], new_position[1], (50,5))
+				light = True
+
 
 def putLightT(matrix, h, x, z):
-	matrix.setValue(h-1, x, z, (89,0))
+	h -= 1
+	for neighbor_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
+		new_position = (x + neighbor_position[0], z + neighbor_position[1])
+		if utilityFunctions.getBlockFullValue(matrix, new_position[0], h, new_position[1]) != (0,0):
+			if x < new_position[0]:
+				matrix.setValue(h, x, z, (50,2))
+				return True
+			elif x > new_position[0]:
+				matrix.setValue(h, x, z, (50,1))
+				return True
+			elif z < new_position[1]:
+				matrix.setValue(h, x, z, (50,3))
+				return True
+			elif z > new_position[1]:
+				matrix.setValue(h, x, z, (50,4))
+				return True
+	return False

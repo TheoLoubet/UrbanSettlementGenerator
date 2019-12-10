@@ -328,6 +328,12 @@ def hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, scoring_funct
 		return False
 	return True
 
+def hasAcceptableSteepnessNeighbourhoods(x_min, x_max, z_min, z_max, height_map, threshold = 5):
+	score = getScoreArea_type4(height_map, x_min, x_max, z_min , z_max)
+	if score > threshold:
+		return False
+	return True
+
 # given a box selection, returns a 2d matrix where each element is
 # the height of the first non-block air in that x, z position
 def getHeightMap(level, box):

@@ -164,20 +164,20 @@ def perform(level, box, options):
 		for p in final_partitioning:
 			logging.info("\t{}".format(p))
 
-	list_score = []
-	for p in final_partitioning:
-		score4 = utilityFunctions.getScoreArea_type4(height_map, p[2], p[3], p[4], p[5])
-		list_score.append(score4)
-
-	fichier = open("data.csv", 'a')
-	for v in range(min(list_score), max(list_score)):
-		nb_occurence = list_score.count(v)
-		if nb_occurence != 0:
-			fichier.write(str(v))
-			fichier.write(';')
-			fichier.write(str(nb_occurence))
-			fichier.write('\n')
-	fichier.close
+	"""list_score = []
+				for p in final_partitioning:
+					score4 = utilityFunctions.getScoreArea_type4(height_map, p[2], p[3], p[4], p[5])
+					list_score.append(score4)
+			
+				fichier = open("data.csv", 'a')
+				for v in range(min(list_score), max(list_score)):
+					nb_occurence = list_score.count(v)
+					if nb_occurence != 0:
+						fichier.write(str(v))
+						fichier.write(';')
+						fichier.write(str(nb_occurence))
+						fichier.write('\n')
+				fichier.close"""
 
 	for i in xrange(0, int(len(final_partitioning)*0.75)+1):
 		house = generateHouse(world, final_partitioning[i], height_map, simple_height_map)
