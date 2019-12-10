@@ -116,9 +116,6 @@ def generateFloor(matrix, h, x_min, x_max, z_min, z_max, floor):
 	for x in range(x_min, x_max+1):
 		for z in range(z_min, z_max+1):
 			matrix.setValue(h,x,z,floor)
-	x_mid = int((x_max - x_min)/2)
-	z_mid = int((z_max - z_min)/2)
-	matrix.setValue(h+1,x_mid,z_mid,(89,0))
 
 def generateWalls(matrix, h_min, h_tower, x_min, x_max, z_min, z_max, wall):
 
@@ -412,7 +409,7 @@ def putLightT(matrix, h, x, z):
 	h -= 1
 	for neighbor_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
 		new_position = (x + neighbor_position[0], z + neighbor_position[1])
-		if utilityFunctions.getBlockFullValue(matrix, new_position[0], h, new_position[1]) != (0,0):
+		if utilityFunctions.getBlockFullValue(matrix, new_position[0], h, new_position[1]) == (45,0):
 			if x < new_position[0]:
 				matrix.setValue(h, x, z, (50,2))
 				return True
@@ -420,9 +417,9 @@ def putLightT(matrix, h, x, z):
 				matrix.setValue(h, x, z, (50,1))
 				return True
 			elif z < new_position[1]:
-				matrix.setValue(h, x, z, (50,3))
+				matrix.setValue(h, x, z, (50,4))
 				return True
 			elif z > new_position[1]:
-				matrix.setValue(h, x, z, (50,4))
+				matrix.setValue(h, x, z, (50,3))
 				return True
 	return False

@@ -31,7 +31,8 @@ Now that we're sure that the bridge is buildable, we alternate between bottom sl
 
 While building in the neighborhood, instead of building only houses, we build towers on 25% of the partitions that have the worst flatness score. The tower is built randomly inside the partition, which is not flattened before building. Once we have the position of the tower, we check around it to have the lowest and highest height of the block around, which will determine the height of the tower. To build the door, we compare the middle point of each side and we build the door on the one that is the lowest.
 
--> add things inside tower (stairs, need plateform on the top with furnace etc..) -> add light
--> remove tree ? pre treatment of the map ?
--> change function of score of flatness (number of occurence of each height) (Use the medium of all the height to see if it's a hole or a moutain)
+-> add things inside tower (stairs, need plateform on the top with furnace etc, light) -> done
+-> change function of score of flatness (number of occurence of each height) -> done
 -> check inside of the partition where the score is the lowest to build the tower on it -> done
+
+-> remove tree ? pre treatment of the map ?

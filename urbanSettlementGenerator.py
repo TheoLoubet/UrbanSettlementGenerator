@@ -117,7 +117,6 @@ def perform(level, box, options):
 	threshold = 1
 	partitioning_list = []
 	final_partitioning = []
-
 	while available_lots < minimum_lots and current_try < maximum_tries:
 		partitioning_list = []
 		for i in range(iterate):
@@ -137,10 +136,10 @@ def perform(level, box, options):
 					if cond1 == False: failed_conditions.append(1) 
 					cond2 = utilityFunctions.hasMinimumSize(y_min, y_max, x_min, x_max,z_min,z_max, minimum_h, minimum_w, mininum_d)
 					if cond2 == False: failed_conditions.append(2) 
-					cond3 = utilityFunctions.hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, utilityFunctions.getScoreArea_type1, threshold)
+					cond3 = utilityFunctions.hasAcceptableSteepnessNeighbourhoods(x_min, x_max, z_min, z_max, height_map, threshold)
 					if cond3 == False: failed_conditions.append(3) 
 					if cond1 and cond2 and cond3:
-						score = utilityFunctions.getScoreArea_type1(height_map, x_min, x_max, z_min, z_max)
+						score = utilityFunctions.getScoreArea_type4(height_map, x_min, x_max, z_min, z_max)
 						valid_partitioning.append((score, p))
 						logging.info("Passed the 3 conditions!")
 					else:
@@ -164,26 +163,13 @@ def perform(level, box, options):
 		for p in final_partitioning:
 			logging.info("\t{}".format(p))
 
-	"""list_score = []
-				for p in final_partitioning:
-					score4 = utilityFunctions.getScoreArea_type4(height_map, p[2], p[3], p[4], p[5])
-					list_score.append(score4)
-			
-				fichier = open("data.csv", 'a')
-				for v in range(min(list_score), max(list_score)):
-					nb_occurence = list_score.count(v)
-					if nb_occurence != 0:
-						fichier.write(str(v))
-						fichier.write(';')
-						fichier.write(str(nb_occurence))
-						fichier.write('\n')
-				fichier.close"""
-
 	for i in xrange(0, int(len(final_partitioning)*0.75)+1):
+		print("score house : {}; old score : {}".format(utilityFunctions.getScoreArea_type4(height_map, final_partitioning[i][2], final_partitioning[i][3], final_partitioning[i][4], final_partitioning[i][5]), utilityFunctions.getScoreArea_type1(height_map, final_partitioning[i][2], final_partitioning[i][3], final_partitioning[i][4], final_partitioning[i][5])))
 		house = generateHouse(world, final_partitioning[i], height_map, simple_height_map)
 		all_buildings.append(house)
 
 	for i in xrange(int(len(final_partitioning)*0.75)+1, len(final_partitioning)):
+		print("score tower : {}; old score : {}".format(utilityFunctions.getScoreArea_type4(height_map, final_partitioning[i][2], final_partitioning[i][3], final_partitioning[i][4], final_partitioning[i][5]), utilityFunctions.getScoreArea_type1(height_map, final_partitioning[i][2], final_partitioning[i][3], final_partitioning[i][4], final_partitioning[i][5])))
 		tower = generateTower(world, final_partitioning[i], height_map, simple_height_map)
 		all_buildings.append(tower)
 
