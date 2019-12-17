@@ -35,4 +35,5 @@ While building in the neighborhood, instead of building only houses, we build to
 -> change function of score of flatness (number of occurence of each height) -> done
 -> check inside of the partition where the score is the lowest to build the tower on it -> done
 
--> remove tree ? pre treatment of the map ?
+
+## remove tree ? pre treatment of the map ?

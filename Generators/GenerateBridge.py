@@ -22,22 +22,27 @@ def generateBridge(matrix, height_map, p1, p2): #generate a bridge between p1 an
 	middlepoint = (int((p1[0]+p2[0])/2),(int((p1[1]+p2[1])/2)))
 	path_bridge1 = getPathBridge(matrix, p1, middlepoint) #first half
 	path_bridge2 = getPathBridge(matrix, p2, middlepoint) #second half
+	
+	if len(path_bridge1) <= 3 or len(path_bridge2) <= 3:
+		buildSmallBridge(matrix, path_bridge1, height_map)
+		buildSmallBridge(matrix, path_bridge2, height_map)
 
-	#check if this bridge is buildable 
-	if height_map[min_point[0]][min_point[1]] + len(path_bridge1)*0.5 >= h_bridge:
-		#build the bridge
-		buildBridge(matrix, path_bridge1, h_bridge, h1+1, middlepoint, 'y') #we build the pillar in the middle point only once
-		buildBridge(matrix, path_bridge2, h_bridge, h2+1, None, 'y')
-	else: #bridge can't be built that way, going up only from one side
-		path_bridge = getPathBridge(matrix, min_point, max_point) #full bridge
-		if height_map[min_point[0]][min_point[1]] + len(path_bridge)*0.5 >= height_map[max_point[0]][max_point[1]]:
-			buildBridge(matrix, path_bridge, max(h1,h2), min(h1,h2)+1, None, 'n')
-		else:
-			#dig if height difference still too big
-			while height_map[min_point[0]][min_point[1]] + len(path_bridge)*0.5 < height_map[max_point[0]][max_point[1]]:
-				height_map[max_point[0]][max_point[1]] -= 1
-			cleanFundation(matrix, max_point, height_map)
-			buildBridge(matrix, path_bridge, max(h1,h2), min(h1,h2)+1, None, 'n')
+	else:
+		#check if this bridge is buildable 
+		if height_map[min_point[0]][min_point[1]] + len(path_bridge1)*0.5 >= h_bridge:
+			#build the bridge
+			buildBridge(matrix, path_bridge1, h_bridge, h1+1, middlepoint, 'y') #we build the pillar in the middle point only once
+			buildBridge(matrix, path_bridge2, h_bridge, h2+1, None, 'y')
+		else: #bridge can't be built that way, going up only from one side
+			path_bridge = getPathBridge(matrix, min_point, max_point) #full bridge
+			if height_map[min_point[0]][min_point[1]] + len(path_bridge)*0.5 >= height_map[max_point[0]][max_point[1]]:
+				buildBridge(matrix, path_bridge, max(h1,h2), min(h1,h2)+1, None, 'n')
+			else:
+				#dig if height difference still too big
+				while height_map[min_point[0]][min_point[1]] + len(path_bridge)*0.5 < height_map[max_point[0]][max_point[1]]:
+					height_map[max_point[0]][max_point[1]] -= 1
+				cleanFundation(matrix, max_point, height_map)
+				buildBridge(matrix, path_bridge, max(h1,h2), min(h1,h2)+1, None, 'n')
 
 def getPathBridge(matrix, p1, p2): #find a path to link p1 to p2
 	path_bridge = []
@@ -202,15 +207,15 @@ def buildBarrierX(matrix, h_bridge, path_bridge): #build barrier on the bridge g
 	putLight(matrix, h_bridge, path_bridge[0][0], path_bridge[0][1]-2)
 	putLight(matrix, h_bridge, path_bridge[0][0], path_bridge[0][1]+2)
 	for i in range(1, len(path_bridge)):
-		matrix.setValue(h_bridge+1, path_bridge[i][0], path_bridge[i][1]-2, 139)
-		matrix.setValue(h_bridge+1, path_bridge[i][0], path_bridge[i][1]+2, 139)
+		matrix.setValue(h_bridge+1, path_bridge[i][0], path_bridge[i][1]-2, (139,0))
+		matrix.setValue(h_bridge+1, path_bridge[i][0], path_bridge[i][1]+2, (139,0))
 
 def buildBarrierZ(matrix, h_bridge, path_bridge): #build barrier on the bridge going through the Z axis
 	putLight(matrix, h_bridge, path_bridge[0][0]-2, path_bridge[0][1])
 	putLight(matrix, h_bridge, path_bridge[0][0]+2, path_bridge[0][1])
 	for i in range(1, len(path_bridge)):
-		matrix.setValue(h_bridge+1, path_bridge[i][0]-2, path_bridge[i][1], 139)
-		matrix.setValue(h_bridge+1, path_bridge[i][0]+2, path_bridge[i][1], 139)
+		matrix.setValue(h_bridge+1, path_bridge[i][0]-2, path_bridge[i][1], (139,0))
+		matrix.setValue(h_bridge+1, path_bridge[i][0]+2, path_bridge[i][1], (139,0))
 
 def putLight(matrix, h, x, z): #build a light and a pillar under it
 	matrix.setValue(h+1,x,z,(139,0))
@@ -227,3 +232,25 @@ def cleanFundation(matrix, p, height_map): #clean the endpoints of the bridge
 		fillUnder(matrix, h, position_to_clean[0], position_to_clean[1])
 		cleanAbove(matrix, h, position_to_clean[0], position_to_clean[1])
 		height_map[position_to_clean[0]][position_to_clean[1]] = h
+
+def buildSmallBridge(matrix, path_bridge, height_map):
+	for i in range(0, len(path_bridge)):
+		x = path_bridge[i][0]
+		z = path_bridge[i][1]
+		h = height_map[x][z]
+		matrix.setValue(h, x, z, (43,5))
+
+	#cross at the end of the bridge
+	matrix.setValue(height_map[path_bridge[len(path_bridge)-1][0]][path_bridge[len(path_bridge)-1][1]], path_bridge[len(path_bridge)-1][0], path_bridge[len(path_bridge)-1][1], (43,5))
+	matrix.setValue(height_map[path_bridge[len(path_bridge)-1][0]][path_bridge[len(path_bridge)-1][1]], path_bridge[len(path_bridge)-1][0]+1, path_bridge[len(path_bridge)-1][1], (43,5))
+	matrix.setValue(height_map[path_bridge[len(path_bridge)-1][0]][path_bridge[len(path_bridge)-1][1]], path_bridge[len(path_bridge)-1][0], path_bridge[len(path_bridge)-1][1]+1, (43,5))
+	matrix.setValue(height_map[path_bridge[len(path_bridge)-1][0]][path_bridge[len(path_bridge)-1][1]], path_bridge[len(path_bridge)-1][0]-1, path_bridge[len(path_bridge)-1][1], (43,5))
+	matrix.setValue(height_map[path_bridge[len(path_bridge)-1][0]][path_bridge[len(path_bridge)-1][1]], path_bridge[len(path_bridge)-1][0], path_bridge[len(path_bridge)-1][1]-1, (43,5))
+
+	for i in range(0, len(path_bridge)-1):
+		if path_bridge[i][0] != path_bridge[i+1][0]:
+			setIfEmpty(matrix, h_actual, path_bridge[i][0], path_bridge[i][1]-1, (43,8))
+			setIfEmpty(matrix, h_actual, path_bridge[i][0], path_bridge[i][1]+1, (43,8))
+		elif path_bridge[i][1] != path_bridge[i+1][1]:
+			setIfEmpty(matrix, h_actual, path_bridge[i][0]-1, path_bridge[i][1], (43,8))
+			setIfEmpty(matrix, h_actual, path_bridge[i][0]+1, path_bridge[i][1], (43,8))
