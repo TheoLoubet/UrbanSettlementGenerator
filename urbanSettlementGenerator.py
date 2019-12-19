@@ -190,7 +190,7 @@ def perform(level, box, options):
 	 	simple_path = utilityFunctions.simpleAStar(p1.entranceLot, p2.entranceLot, simple_pathMap, simple_height_map) #water and height are not important
 	 	list_end_points = utilityFunctions.findBridgeEndPoints(world, simple_path, simple_height_map)
 
-	 	if list_end_points != []:
+	 	if len(list_end_points)%2 == 0:
 	 		for i in xrange(0,len(list_end_points),2):
 	 			logging.info("Found water between {} and {}. Generating bridge...".format(list_end_points[i], list_end_points[i+1]))
 	 			GenerateBridge.generateBridge(world, simple_height_map, list_end_points[i], list_end_points[i+1])
