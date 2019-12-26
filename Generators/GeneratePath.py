@@ -205,18 +205,20 @@ def computeCenterOfMass(block_section): #compute the center of gravity to have a
 def findPos(matrix, x, z, path, height_map): #try to find a position next to the one given that is suitable for building a light
 	for neighbor_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]:
 		new_position = (x + neighbor_position[0], z + neighbor_position[1])
+		(b,d) = utilityFunctions.getBlockFullValue(matrix, height_map[new_position[0]][new_position[1]],new_position[0],new_position[1])
 		try:
-			if height_map[new_position[0]][new_position[1]] != -1 and matrix.getValue(height_map[new_position[0]][new_position[1]],new_position[0],new_position[1]) != 65:
+			if height_map[new_position[0]][new_position[1]] != -1 and b != 65:
 				return new_position
 		except:
 			continue
 	return (-1, -1)
 
-def isNeighborLight(matrix,height_map, x, z): #return True if a light is neighbor to the hposition x, y
+def isNeighborLight(matrix,height_map, x, z): #return True if a light is neighbor to the position x, y
 	for neighbor_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]:
 		new_position = (x + neighbor_position[0], z + neighbor_position[1])
 		try:
-			if matrix.getValue(height_map[new_position[0]][new_position[1]],new_position[0],new_position[1]) == 139:
+			(b,d) = utilityFunctions.getBlockFullValue(matrix, height_map[new_position[0]][new_position[1]]+1, new_position[0], new_position[1])
+			if (b, d) == (139,0):
 				return True
 		except:
 			continue

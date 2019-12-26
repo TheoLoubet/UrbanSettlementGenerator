@@ -23,7 +23,7 @@ def generateBridge(matrix, height_map, p1, p2): #generate a bridge between p1 an
 	path_bridge1 = getPathBridge(matrix, p1, middlepoint) #first half
 	path_bridge2 = getPathBridge(matrix, p2, middlepoint) #second half
 	
-	if len(path_bridge1) <= 3 or len(path_bridge2) <= 3:
+	if len(path_bridge1) <= 4 or len(path_bridge2) <= 4:
 		buildSmallBridge(matrix, path_bridge1, height_map)
 		buildSmallBridge(matrix, path_bridge2, height_map)
 
@@ -64,6 +64,13 @@ def getPathBridge(matrix, p1, p2): #find a path to link p1 to p2
 	return path_bridge
 
 def buildBridge(matrix, path_bridge, h_bridge, h_start, middlepoint, normal_bridge):
+	#check if the bridge is more x or z axis
+	if abs(path_bridge[0][0] - path_bridge[len(path_bridge)-1][0]) >= abs(path_bridge[0][1] - path_bridge[len(path_bridge)-1][1]):
+		x_val = 0
+		z_val = 1
+	else:
+		x_val = 1
+		z_val = 0
 	#build cross in the middle if needed
 	if middlepoint != None:
 		matrix.setValue(h_bridge, middlepoint[0], middlepoint[1], (43,5))
@@ -88,9 +95,11 @@ def buildBridge(matrix, path_bridge, h_bridge, h_start, middlepoint, normal_brid
 			if isDemi == True: #check if we need to put a full block or 2 slabs
 				matrix.setValue(h_actual, path_bridge[i][0], path_bridge[i][1], (44,13))
 				matrix.setValue(h_actual+1, path_bridge[i][0], path_bridge[i][1], (44,5))
+				fillUnder(matrix, h_actual, path_bridge[i][0], path_bridge[i][1])
 				h_actual += 1
 			else:
 				matrix.setValue(h_actual, path_bridge[i][0], path_bridge[i][1], (43,5))
+				fillUnder(matrix, h_actual, path_bridge[i][0], path_bridge[i][1])
 			isDemi = not isDemi
 		
 		#max height reached
@@ -102,65 +111,38 @@ def buildBridge(matrix, path_bridge, h_bridge, h_start, middlepoint, normal_brid
 	h_actual = h_start
 	barrierPut = False
 	#start point of the bridge
-	#search the right way to extend bridge
-	if path_bridge[0][0] != path_bridge[1][0]:
-		setIfCorrect(matrix, h_actual, path_bridge[0][0], path_bridge[0][1]-1, (44,0))
-		fillUnder(matrix, h_actual, path_bridge[0][0], path_bridge[0][1]-1)
-		setIfCorrect(matrix, h_actual, path_bridge[0][0], path_bridge[0][1]+1, (44,0))
-		fillUnder(matrix, h_actual, path_bridge[0][0], path_bridge[0][1]+1)
-	elif path_bridge[0][1] != path_bridge[1][1]:
-		setIfCorrect(matrix, h_actual, path_bridge[0][0]-1, path_bridge[0][1], (44,0))
-		fillUnder(matrix, h_actual, path_bridge[0][0]-1, path_bridge[0][1])
-		setIfCorrect(matrix, h_actual, path_bridge[0][0]+1, path_bridge[0][1], (44,0))
-		fillUnder(matrix, h_actual, path_bridge[0][0]+1, path_bridge[0][1])
-	#search the right way to extend bridge
-	if path_bridge[1][0] != path_bridge[2][0]:
-		setIfCorrect(matrix, h_actual, path_bridge[1][0], path_bridge[1][1]-1, (43,0))
-		fillUnder(matrix, h_actual, path_bridge[1][0], path_bridge[1][1]-1)
-		setIfCorrect(matrix, h_actual, path_bridge[1][0], path_bridge[1][1]+1, (43,0))
-		fillUnder(matrix, h_actual, path_bridge[1][0], path_bridge[1][1]+1)
-	elif path_bridge[1][1] != path_bridge[2][1]:
-		setIfCorrect(matrix, h_actual, path_bridge[1][0]-1, path_bridge[1][1], (43,0))
-		fillUnder(matrix, h_actual, path_bridge[1][0]-1, path_bridge[1][1])
-		setIfCorrect(matrix, h_actual, path_bridge[1][0]+1, path_bridge[1][1], (43,0))
-		fillUnder(matrix, h_actual, path_bridge[1][0]+1, path_bridge[1][1])
+	setIfCorrect(matrix, h_actual, path_bridge[0][0]-x_val, path_bridge[0][1]-z_val, (44,0))
+	fillUnder(matrix, h_actual, path_bridge[0][0]-x_val, path_bridge[0][1]-z_val)
+	setIfCorrect(matrix, h_actual, path_bridge[0][0]+x_val, path_bridge[0][1]+z_val, (44,0))
+	fillUnder(matrix, h_actual, path_bridge[0][0]+x_val, path_bridge[0][1]+z_val)
+	setIfCorrect(matrix, h_actual, path_bridge[1][0]-x_val, path_bridge[1][1]-z_val, (43,0))
+	fillUnder(matrix, h_actual, path_bridge[1][0]-x_val, path_bridge[1][1]-z_val)
+	setIfCorrect(matrix, h_actual, path_bridge[1][0]+x_val, path_bridge[1][1]+z_val, (43,0))
+	fillUnder(matrix, h_actual, path_bridge[1][0]+x_val, path_bridge[1][1]+z_val)
 
 	#main part of the bridge
 	for i in range(2, len(path_bridge)-1):
 		#the bridge height goes up
 		if h_actual != h_bridge:
 			if isDemi == True: #check if we need to put a full block or 2 slabs
-				#search the right way to extend bridge
-				if path_bridge[i][0] != path_bridge[i+1][0]:
-					setIfCorrect(matrix, h_actual, path_bridge[i][0], path_bridge[i][1]-1, (44,8))
-					setIfCorrect(matrix, h_actual+1, path_bridge[i][0], path_bridge[i][1]-1, (44,0))
-					setIfCorrect(matrix, h_actual, path_bridge[i][0], path_bridge[i][1]+1, (44,8))
-					setIfCorrect(matrix, h_actual+1, path_bridge[i][0], path_bridge[i][1]+1, (44,0))
-				elif path_bridge[i][1] != path_bridge[i+1][1]:
-					setIfCorrect(matrix, h_actual, path_bridge[i][0]-1, path_bridge[i][1], (44,8))
-					setIfCorrect(matrix, h_actual+1, path_bridge[i][0]-1, path_bridge[i][1], (44,0))
-					setIfCorrect(matrix, h_actual, path_bridge[i][0]+1, path_bridge[i][1], (44,8))
-					setIfCorrect(matrix, h_actual+1, path_bridge[i][0]+1, path_bridge[i][1], (44,0))
+				setIfCorrect(matrix, h_actual+1, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val, (44,0))
+				setIfCorrect(matrix, h_actual, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val, (44,8))
+				fillUnder(matrix, h_actual, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val)
+				setIfCorrect(matrix, h_actual+1, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val, (44,0))
+				setIfCorrect(matrix, h_actual, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val, (44,8))
+				fillUnder(matrix, h_actual, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val)
 				h_actual += 1
 			else:
-				#search the right way to extend bridge
-				if path_bridge[i][0] != path_bridge[i+1][0]:
-					setIfCorrect(matrix, h_actual, path_bridge[i][0], path_bridge[i][1]-1, (43,0))
-					setIfCorrect(matrix, h_actual, path_bridge[i][0], path_bridge[i][1]+1, (43,0))
-				elif path_bridge[i][1] != path_bridge[i+1][1]:
-					setIfCorrect(matrix, h_actual, path_bridge[i][0]-1, path_bridge[i][1], (43,0))
-					setIfCorrect(matrix, h_actual, path_bridge[i][0]+1, path_bridge[i][1], (43,0))
+				setIfCorrect(matrix, h_actual, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val, (43,0))
+				fillUnder(matrix, h_actual, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val)
+				setIfCorrect(matrix, h_actual, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val, (43,0))
+				fillUnder(matrix, h_actual, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val)
 			isDemi = not isDemi
 		
 		#max height reached
 		else:
-			#search the right way to extend bridge
-			if path_bridge[i][0] != path_bridge[i+1][0]:
-				matrix.setValue(h_bridge, path_bridge[i][0], path_bridge[i][1]-1, (43,0))
-				matrix.setValue(h_bridge, path_bridge[i][0], path_bridge[i][1]+1, (43,0))
-			elif path_bridge[i][1] != path_bridge[i+1][1]:
-				matrix.setValue(h_bridge, path_bridge[i][0]-1, path_bridge[i][1], (43,0))
-				matrix.setValue(h_bridge, path_bridge[i][0]+1, path_bridge[i][1], (43,0))
+			setIfCorrect(matrix, h_bridge, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val, (43,0))
+			setIfCorrect(matrix, h_bridge, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val, (43,0))
 			#Build the barrier and light when the direction is fixed if the bridge is normal
 			if normal_bridge == 'y':	
 				if barrierPut == False and path_bridge[i-1][0] != path_bridge[i][0] != path_bridge[i+1][0]:
@@ -176,7 +158,7 @@ def fillUnder(matrix, h, x, z): #put path blocks under the position if there is 
 		matrix.setValue(h, x, z, (b-1, d-8))
 	h -= 1
 	while matrix.getValue(h, x, z) in air_like+water_like:
-		matrix.setValue(h, x, z, (1,6))
+		matrix.setValue(h, x, z, (43,8))
 		h -= 1
 
 def cleanAbove(matrix, h, x, z):
@@ -186,8 +168,8 @@ def cleanAbove(matrix, h, x, z):
 		h += 1
 
 def setIfCorrect(matrix, h, x, z, i): #put block only if the position given is correct
-	(b, d) = utilityFunctions.getBlockFullValue(matrix, h-1, x, z)
-	if matrix.getValue(h, x, z) in air_like and (b, d) not in [(43,0),(44,8),(44,0),(43,5),(44,13),(44,5)]:
+	(b,d) = utilityFunctions.getBlockFullValue(matrix, h-1, x, z)
+	if matrix.getValue(h, x, z) in air_like and (b,d) not in [(43,0),(44,8),(44,0),(43,5),(44,13),(44,5)]:
 		matrix.setValue(h, x, z, i)
 
 
@@ -230,6 +212,13 @@ def cleanFundation(matrix, p, height_map): #clean the endpoints of the bridge
 		height_map[position_to_clean[0]][position_to_clean[1]] = h
 
 def buildSmallBridge(matrix, path_bridge, height_map):
+	if abs(path_bridge[0][0] - path_bridge[len(path_bridge)-1][0]) >= abs(path_bridge[0][1] - path_bridge[len(path_bridge)-1][1]):
+		x_val = 0
+		z_val = 1
+	else:
+		x_val = 1
+		z_val = 0
+
 	for i in range(0, len(path_bridge)):
 		x = path_bridge[i][0]
 		z = path_bridge[i][1]
@@ -244,9 +233,5 @@ def buildSmallBridge(matrix, path_bridge, height_map):
 	matrix.setValue(height_map[path_bridge[len(path_bridge)-1][0]][path_bridge[len(path_bridge)-1][1]], path_bridge[len(path_bridge)-1][0], path_bridge[len(path_bridge)-1][1]-1, (43,5))
 
 	for i in range(0, len(path_bridge)-1):
-		if path_bridge[i][0] != path_bridge[i+1][0]:
-			setIfCorrect(matrix, h_actual, path_bridge[i][0], path_bridge[i][1]-1, (43,8))
-			setIfCorrect(matrix, h_actual, path_bridge[i][0], path_bridge[i][1]+1, (43,8))
-		elif path_bridge[i][1] != path_bridge[i+1][1]:
-			setIfCorrect(matrix, h_actual, path_bridge[i][0]-1, path_bridge[i][1], (43,8))
-			setIfCorrect(matrix, h_actual, path_bridge[i][0]+1, path_bridge[i][1], (43,8))
+		setIfCorrect(matrix, height_map[path_bridge[i][0]-x_val][path_bridge[i][1]-z_val], path_bridge[i][0]-x_val, path_bridge[i][1]-z_val, (43,8))
+		setIfCorrect(matrix, height_map[path_bridge[i][0]+x_val][path_bridge[i][1]+z_val], path_bridge[i][0]+x_val, path_bridge[i][1]+z_val, (43,8))

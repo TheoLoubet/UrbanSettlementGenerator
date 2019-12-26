@@ -24,8 +24,6 @@ To build a bridge, we first generate a path that connects the end points of the 
 Now that we're sure that the bridge is buildable, we alternate between bottom slab and top slab to build it, and we fill the side when it's possible. Finally, if the bridge is build like an arc, we add some lights and barriers and support (that we can't build if it's an other type of bridge because it wouldn't look good).
 If the length of the bridge is small (<=6 blocks), we build a simple road that goes on water
 
--> fix slab
-
 ## Building in moutains
 
 While building in the neighborhood, instead of building only houses, we build towers on 25% of the partitions that have the worst flatness score. The tower is built randomly inside the partition, which is not flattened before building. Once we have the position of the tower, we check around it to have the lowest and highest height of the block around, which will determine the height of the tower. To build the door, we compare the middle point of each side and we build the door on the one that is the lowest.

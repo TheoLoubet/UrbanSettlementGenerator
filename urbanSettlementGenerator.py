@@ -12,6 +12,7 @@ import GeneratePath
 import GenerateBridge
 import GenerateTower
 from Earthworks import prepareLot
+import TreeGestion
 
 # change to INFO if you want a verbose log!
 for handler in logging.root.handlers[:]:
@@ -33,8 +34,10 @@ def perform(level, box, options):
 	logging.info("Selection box dimensions {}, {}, {}".format(width,height,depth))
 	world = utilityFunctions.generateMatrix(level, box, width,depth,height)
 	world_space = utilityFunctions.dotdict({"y_min": 0, "y_max": height-1, "x_min": 0, "x_max": width-1, "z_min": 0, "z_max": depth-1})
-	height_map = utilityFunctions.getHeightMap(level,box)
 	simple_height_map = utilityFunctions.getSimpleHeightMap(level,box) #no -1 when water block
+	list_trees = TreeGestion.prepareMap(world, simple_height_map) #get a list of all trees and erase them, so we can put some of them back after
+	height_map = utilityFunctions.getHeightMap(level,box)
+	simple_height_map = utilityFunctions.getSimpleHeightMap(level,box) #actualise the simple height map now that there are no more trees
 	# ==== PARTITIONING OF NEIGHBOURHOODS ==== 
 	(center, neighbourhoods) = generateCenterAndNeighbourhood(world_space, height_map)
 	all_buildings = []
@@ -206,6 +209,8 @@ def perform(level, box, options):
 	 		logging.info("Found path between {} and {}. Generating road...".format(p1.entranceLot, p2.entranceLot))
 			GeneratePath.generatePath(world, path, height_map, (pavementBlockID, pavementBlockSubtype))
 
+	# ==== PUT BACK UNTOUCHED TREES ====
+	TreeGestion.putBackTrees(world, list_trees)
 	# ==== UPDATE WORLD ====
 	world.updateWorld()
 

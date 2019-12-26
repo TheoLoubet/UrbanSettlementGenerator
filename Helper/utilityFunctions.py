@@ -1,7 +1,6 @@
 import time # for timing
 from math import sqrt, tan, sin, cos, pi, ceil, floor, acos, atan, asin, degrees, radians, log, atan2, acos, asin
 from random import *
-from numpy import *
 from pymclevel import alphaMaterials, MCSchematic, MCLevel, BoundingBox
 from mcplatform import *
 from collections import defaultdict
