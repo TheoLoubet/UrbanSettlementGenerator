@@ -141,8 +141,8 @@ def buildBridge(matrix, path_bridge, h_bridge, h_start, middlepoint, normal_brid
 		
 		#max height reached
 		else:
-			setIfCorrect(matrix, h_bridge, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val, (43,0))
-			setIfCorrect(matrix, h_bridge, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val, (43,0))
+			matrix.setValue(h_bridge, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val, (43,0))
+			matrix.setValue(h_bridge, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val, (43,0))
 			#Build the barrier and light when the direction is fixed if the bridge is normal
 			if normal_bridge == 'y':	
 				if barrierPut == False and path_bridge[i-1][0] != path_bridge[i][0] != path_bridge[i+1][0]:

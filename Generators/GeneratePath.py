@@ -205,8 +205,8 @@ def computeCenterOfMass(block_section): #compute the center of gravity to have a
 def findPos(matrix, x, z, path, height_map): #try to find a position next to the one given that is suitable for building a light
 	for neighbor_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]:
 		new_position = (x + neighbor_position[0], z + neighbor_position[1])
-		(b,d) = utilityFunctions.getBlockFullValue(matrix, height_map[new_position[0]][new_position[1]],new_position[0],new_position[1])
 		try:
+			(b,d) = utilityFunctions.getBlockFullValue(matrix, height_map[new_position[0]][new_position[1]],new_position[0],new_position[1])
 			if height_map[new_position[0]][new_position[1]] != -1 and b != 65:
 				return new_position
 		except:

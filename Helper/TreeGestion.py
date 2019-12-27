@@ -7,7 +7,7 @@ water_like = [8, 9, 10, 11]
 wood_like = [17, 162]
 leaf_like = [18, 161]
 
-def findTrees(matrix, height_map):
+def prepareMap(matrix, height_map):
 	minHeightMap = np.min(height_map)
 	maxHeightMap = np.max(height_map)
 	print("minh : {}; maxh : {}".format(minHeightMap, maxHeightMap))
@@ -22,18 +22,25 @@ def findTrees(matrix, height_map):
 
 def findFullTree(matrix, height_map, h, xt, zt):
 	tree_block = []
-	while matrix.getValue(h, xt, zt) in wood_like+leaf_like:
-		for x in range(xt-2, xt+2):
-			for z in range(zt-2, zt+2):
+	while matrix.getValue(h, xt, zt) in wood_like:
+		for x in range(xt-2, xt+3):
+			for z in range(zt-2, zt+3):
 				try:
 					if matrix.getValue(h, x, z) in wood_like+leaf_like:
 						tree_block.append((h, x, z, utilityFunctions.getBlockFullValue(matrix, h, x, z)))
 				except:
 					continue
-			h += 1
+		h += 1
+	for x in range(xt-2, xt+3):
+		for z in range(zt-2, zt+3):
+			try:
+				if matrix.getValue(h, x, z) in wood_like+leaf_like:
+					tree_block.append((h, x, z, utilityFunctions.getBlockFullValue(matrix, h, x, z)))
+			except:
+				continue
 	return tree_block
 
-def eraseAllTrees(matrix, minh, xsize, zsize):
+def eraseAllTrees(matrix, minh, maxh, xsize, zsize):
 	for x in range(0, xsize):
 		for z in range(0, zsize):
 			for h in range(minh, maxh):
@@ -42,9 +49,9 @@ def eraseAllTrees(matrix, minh, xsize, zsize):
 
 def putBackTrees(matrix, list_trees):
 	for tree in list_trees:
-		#if checkIfTreeUntouched(matrix, tree) == True:
-		for h, x, z, i in tree:
-			matrix.setValue(h, x, z, i)
+		if checkIfTreeUntouched(matrix, tree) == True:
+			for h, x, z, i in tree:
+				matrix.setValue(h, x, z, i)
 
 def checkIfTreeUntouched(matrix, tree):
 	for h, x, z, i in tree:
