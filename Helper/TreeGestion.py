@@ -57,4 +57,3 @@ def checkIfTreeUntouched(matrix, tree):
 	for h, x, z, i in tree:
 		if utilityFunctions.getBlockFullValue(matrix, h, x, z) != (0,0):
 			return False
-	return True
