@@ -12,6 +12,7 @@ import GeneratePath
 import GenerateBridge
 import GenerateTower
 from Earthworks import prepareLot
+import TreeGestion
 
 # change to INFO if you want a verbose log!
 for handler in logging.root.handlers[:]:
@@ -33,8 +34,9 @@ def perform(level, box, options):
 	logging.info("Selection box dimensions {}, {}, {}".format(width,height,depth))
 	world = utilityFunctions.generateMatrix(level, box, width,depth,height)
 	world_space = utilityFunctions.dotdict({"y_min": 0, "y_max": height-1, "x_min": 0, "x_max": width-1, "z_min": 0, "z_max": depth-1})
+	simple_height_map = utilityFunctions.getSimpleHeightMap(level,box) #no height = -1 when water block
+	list_trees = TreeGestion.prepareMap(world, simple_height_map) #get a list of all trees and erase them, so we can put some of them back after
 	height_map = utilityFunctions.getHeightMap(level,box)
-	simple_height_map = utilityFunctions.getSimpleHeightMap(level,box) #no -1 when water block
 	# ==== PARTITIONING OF NEIGHBOURHOODS ==== 
 	(center, neighbourhoods) = generateCenterAndNeighbourhood(world_space, height_map)
 	all_buildings = []
@@ -74,10 +76,10 @@ def perform(level, box, options):
 				if cond1 == False: failed_conditions.append(1) 
 				cond2 = utilityFunctions.hasMinimumSize(y_min, y_max, x_min, x_max,z_min,z_max, minimum_h, minimum_w, mininum_d)
 				if cond2 == False: failed_conditions.append(2) 
-				cond3 = utilityFunctions.hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, utilityFunctions.getScoreArea_type1, threshold)
+				cond3 = utilityFunctions.hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, threshold)
 				if cond3 == False: failed_conditions.append(3) 
 				if cond1 and cond2 and cond3:
-					score = utilityFunctions.getScoreArea_type1(height_map, x_min, x_max, z_min, z_max)
+					score = utilityFunctions.getScoreArea_type4(height_map, x_min, x_max, z_min, z_max)
 					valid_partitioning.append((score, p))
 				else:
 					logging.info("Failed Conditions {}".format(failed_conditions))
@@ -117,6 +119,7 @@ def perform(level, box, options):
 	threshold = 1
 	partitioning_list = []
 	final_partitioning = []
+	
 	while available_lots < minimum_lots and current_try < maximum_tries:
 		partitioning_list = []
 		for i in range(iterate):
@@ -136,7 +139,7 @@ def perform(level, box, options):
 					if cond1 == False: failed_conditions.append(1) 
 					cond2 = utilityFunctions.hasMinimumSize(y_min, y_max, x_min, x_max,z_min,z_max, minimum_h, minimum_w, mininum_d)
 					if cond2 == False: failed_conditions.append(2) 
-					cond3 = utilityFunctions.hasAcceptableSteepnessNeighbourhoods(x_min, x_max, z_min, z_max, height_map, threshold)
+					cond3 = utilityFunctions.hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, threshold)
 					if cond3 == False: failed_conditions.append(3) 
 					if cond1 and cond2 and cond3:
 						score = utilityFunctions.getScoreArea_type4(height_map, x_min, x_max, z_min, z_max)
@@ -164,12 +167,10 @@ def perform(level, box, options):
 			logging.info("\t{}".format(p))
 
 	for i in xrange(0, int(len(final_partitioning)*0.75)+1):
-		print("score house : {}; old score : {}".format(utilityFunctions.getScoreArea_type4(height_map, final_partitioning[i][2], final_partitioning[i][3], final_partitioning[i][4], final_partitioning[i][5]), utilityFunctions.getScoreArea_type1(height_map, final_partitioning[i][2], final_partitioning[i][3], final_partitioning[i][4], final_partitioning[i][5])))
 		house = generateHouse(world, final_partitioning[i], height_map, simple_height_map)
 		all_buildings.append(house)
 
 	for i in xrange(int(len(final_partitioning)*0.75)+1, len(final_partitioning)):
-		print("score tower : {}; old score : {}".format(utilityFunctions.getScoreArea_type4(height_map, final_partitioning[i][2], final_partitioning[i][3], final_partitioning[i][4], final_partitioning[i][5]), utilityFunctions.getScoreArea_type1(height_map, final_partitioning[i][2], final_partitioning[i][3], final_partitioning[i][4], final_partitioning[i][5])))
 		tower = generateTower(world, final_partitioning[i], height_map, simple_height_map)
 		all_buildings.append(tower)
 
@@ -191,7 +192,7 @@ def perform(level, box, options):
 	 	simple_path = utilityFunctions.simpleAStar(p1.entranceLot, p2.entranceLot, simple_pathMap, simple_height_map) #water and height are not important
 	 	list_end_points = utilityFunctions.findBridgeEndPoints(world, simple_path, simple_height_map)
 
-	 	if list_end_points != []:
+	 	if len(list_end_points)%2 == 0:
 	 		for i in xrange(0,len(list_end_points),2):
 	 			logging.info("Found water between {} and {}. Generating bridge...".format(list_end_points[i], list_end_points[i+1]))
 	 			GenerateBridge.generateBridge(world, simple_height_map, list_end_points[i], list_end_points[i+1])
@@ -207,6 +208,8 @@ def perform(level, box, options):
 	 		logging.info("Found path between {} and {}. Generating road...".format(p1.entranceLot, p2.entranceLot))
 			GeneratePath.generatePath(world, path, height_map, (pavementBlockID, pavementBlockSubtype))
 
+	# ==== PUT BACK UNTOUCHED TREES ====
+	TreeGestion.putBackTrees(world, list_trees)
 	# ==== UPDATE WORLD ====
 	world.updateWorld()
 

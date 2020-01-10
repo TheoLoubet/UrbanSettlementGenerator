@@ -392,7 +392,7 @@ def buildPlatform(matrix, h, x_actual, z_actual):
 	light = False
 	for neighbor_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1), (0, 0)]:
 		new_position = (x_actual + neighbor_position[0], z_actual + neighbor_position[1])
-		if utilityFunctions.getBlockFullValue(matrix, new_position[0], h, new_position[1]) == (0,0):
+		if utilityFunctions.getBlockFullValue(matrix, h, new_position[0], new_position[1]) == (0,0):
 			matrix.setValue(h, new_position[0], new_position[1], (44,10))
 			if craftingTable == False:
 				matrix.setValue(h+1, new_position[0], new_position[1], (58,0))
@@ -409,7 +409,7 @@ def putLightT(matrix, h, x, z):
 	h -= 1
 	for neighbor_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
 		new_position = (x + neighbor_position[0], z + neighbor_position[1])
-		if utilityFunctions.getBlockFullValue(matrix, new_position[0], h, new_position[1]) == (45,0):
+		if utilityFunctions.getBlockFullValue(matrix, h, new_position[0], new_position[1]) == (45,0):
 			if x < new_position[0]:
 				matrix.setValue(h, x, z, (50,2))
 				return True
