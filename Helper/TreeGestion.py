@@ -58,7 +58,7 @@ def checkIfGroundValid(matrix, height_map, origin):
 		for x in range(origin[1]-2, origin[1]+3):
 			for z in range(origin[2]-2, origin[2]+3):
 				try:
-					if utilityFunctions.getBlockFullValue(matrix, height_map[x][z], x, z) == (1,6):
+					if height_map[x][z] == -1 or utilityFunctions.getBlockFullValue(matrix, height_map[x][z], x, z) == (1,6):
 						return False
 				except:
 					continue
