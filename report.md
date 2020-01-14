@@ -29,7 +29,7 @@ If the length of the bridge is small (<=6 blocks), we build a simple road that g
 While building in the neighborhood, instead of building only houses, we build towers on 25% of the partitions that have the worst flatness score. The tower is built randomly inside the partition, which is not flattened before building. Once we have the position of the tower, we check around it to have the lowest and highest height of the block around, which will determine the height of the tower. To build the door, we compare the middle point of each side and we build the door on the one that is the lowest.
 
 -> add things inside tower (stairs, need plateform on the top with furnace etc, light) -> done
--> change function of score of flatness (number of occurence of each height) -> done
+## Change function of score of flatness (number of occurence of each height) -> done
 -> check inside of the partition where the score is the lowest to build the tower on it -> done
 
 

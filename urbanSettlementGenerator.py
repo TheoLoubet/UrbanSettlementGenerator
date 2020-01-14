@@ -209,7 +209,7 @@ def perform(level, box, options):
 			GeneratePath.generatePath(world, path, height_map, (pavementBlockID, pavementBlockSubtype))
 
 	# ==== PUT BACK UNTOUCHED TREES ====
-	TreeGestion.putBackTrees(world, list_trees)
+	TreeGestion.putBackTrees(world, height_map, list_trees)
 	# ==== UPDATE WORLD ====
 	world.updateWorld()
 
