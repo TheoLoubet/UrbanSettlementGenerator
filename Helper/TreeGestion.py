@@ -10,15 +10,15 @@ def prepareMap(matrix, height_map):
 	list_trees = []
 	for x in range(0, len(height_map)):
 		for z in range(0, len(height_map[0])):
-				if matrix.getValue(height_map[x][z]+1, x, z) in wood_like:
-					list_trees.append((findFullTree(matrix, height_map, height_map[x][z]+1, x, z), (height_map[x][z]+1, x, z)))
+				if matrix.getValue(height_map[x][z]+1, x, z) in wood_like: #find all positions of the trunk of the trees that are on the map
+					list_trees.append((findFullTree(matrix, height_map, height_map[x][z]+1, x, z), (height_map[x][z]+1, x, z))) #save the positions of all the blocks of the threes in a list
 	
-	eraseAllTrees(list_trees, matrix)
-	return list_trees
+	eraseAllTrees(list_trees, matrix) #erase all the trees
+	return list_trees #return the list so we know where the trees were placed
 
 def findFullTree(matrix, height_map, h, xt, zt):
 	tree_block = []
-	while matrix.getValue(h, xt, zt) in wood_like:
+	while matrix.getValue(h, xt, zt) in wood_like: #find all the leaves that are around the trunk level by level
 		tree_block.append((h, xt, zt, utilityFunctions.getBlockFullValue(matrix, h, xt, zt)))
 		for x in range(xt-2, xt+3):
 			for z in range(zt-2, zt+3):
@@ -28,6 +28,7 @@ def findFullTree(matrix, height_map, h, xt, zt):
 				except:
 					continue
 		h += 1
+	#get the upper level when the trunk is over, because some leaves are often one level above the end of the trunk
 	tree_block.append((h, xt, zt, utilityFunctions.getBlockFullValue(matrix, h, xt, zt)))
 	for x in range(xt-2, xt+3):
 		for z in range(zt-2, zt+3):
@@ -38,19 +39,19 @@ def findFullTree(matrix, height_map, h, xt, zt):
 				continue
 	return tree_block
 
-def putBackTrees(matrix, height_map, list_trees):
+def putBackTrees(matrix, height_map, list_trees): #go through the list saved and see if all the blocks of a tree are valid, if so we put the tree back using the id we saved for each block
 	for tree, origin in list_trees:
-		if checkIfGroundValid(matrix, height_map, origin) == True and checkIfTreeUntouched(matrix, tree) == True:
+		if checkIfGroundValid(matrix, height_map, origin) == True and checkIfTreeUntouched(matrix, tree) == True: #chek validity of a tree saved
 			for h, x, z, i in tree:
 				matrix.setValue(h, x, z, i)
 
-def checkIfTreeUntouched(matrix, tree):
+def checkIfTreeUntouched(matrix, tree): #check that nothing was built on the position of the tree's blocks
 	for h, x, z, i in tree:
 		if utilityFunctions.getBlockFullValue(matrix, h, x, z) != (0,0):
 			return False
 	return True
 
-def checkIfGroundValid(matrix, height_map, origin):
+def checkIfGroundValid(matrix, height_map, origin): #check that the tree is not above a path, or in a building lot
 	(b, d) = utilityFunctions.getBlockFullValue(matrix, origin[0]-1, origin[1], origin[2])
 	if (b, d) == (0,0) or b == 65:
 		return False
@@ -64,7 +65,7 @@ def checkIfGroundValid(matrix, height_map, origin):
 					continue
 	return True
 
-def eraseAllTrees(list_trees, matrix):
+def eraseAllTrees(list_trees, matrix): #use a BFS approach to erase all the tree by using their origins as starting nodes
 	block_q = []
 	for tree, origin in list_trees:
 		block_q.append(origin)
@@ -74,7 +75,7 @@ def eraseAllTrees(list_trees, matrix):
 			block_q = addNeighborTreeBlockToQueue(matrix, block_q, actual_block)
 			matrix.setValue(actual_block[0], actual_block[1], actual_block[2], (0,0))
 
-def addNeighborTreeBlockToQueue(matrix, block_q, actual_block):
+def addNeighborTreeBlockToQueue(matrix, block_q, actual_block): #get all the neighbor blocks that are part of the tree
 	for neighbor_position in [(1, 0, 0),(-1, 0, 0),(0, 1, 0),(0, -1, 0),(0, 0, 1),(0, 0, -1)]:
 		neighbor_block = (actual_block[0] + neighbor_position[0], actual_block[1] + neighbor_position[1], actual_block[2] + neighbor_position[2])
 		try:

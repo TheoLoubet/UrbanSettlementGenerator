@@ -95,11 +95,9 @@ def buildBridge(matrix, path_bridge, h_bridge, h_start, middlepoint, normal_brid
 			if isDemi == True: #check if we need to put a full block or 2 slabs
 				matrix.setValue(h_actual, path_bridge[i][0], path_bridge[i][1], (44,13))
 				matrix.setValue(h_actual+1, path_bridge[i][0], path_bridge[i][1], (44,5))
-				fillUnder(matrix, h_actual, path_bridge[i][0], path_bridge[i][1])
 				h_actual += 1
 			else:
 				matrix.setValue(h_actual, path_bridge[i][0], path_bridge[i][1], (43,5))
-				fillUnder(matrix, h_actual, path_bridge[i][0], path_bridge[i][1])
 			isDemi = not isDemi
 		
 		#max height reached
@@ -127,22 +125,18 @@ def buildBridge(matrix, path_bridge, h_bridge, h_start, middlepoint, normal_brid
 			if isDemi == True: #check if we need to put a full block or 2 slabs
 				setIfCorrect(matrix, h_actual+1, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val, (44,0))
 				setIfCorrect(matrix, h_actual, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val, (44,8))
-				fillUnder(matrix, h_actual, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val)
 				setIfCorrect(matrix, h_actual+1, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val, (44,0))
 				setIfCorrect(matrix, h_actual, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val, (44,8))
-				fillUnder(matrix, h_actual, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val)
 				h_actual += 1
 			else:
 				setIfCorrect(matrix, h_actual, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val, (43,0))
-				fillUnder(matrix, h_actual, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val)
 				setIfCorrect(matrix, h_actual, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val, (43,0))
-				fillUnder(matrix, h_actual, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val)
 			isDemi = not isDemi
 		
 		#max height reached
 		else:
-			matrix.setValue(h_bridge, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val, (43,0))
-			matrix.setValue(h_bridge, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val, (43,0))
+			setIfCorrect(matrix, h_bridge, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val, (43,0))
+			setIfCorrect(matrix, h_bridge, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val, (43,0))
 			#Build the barrier and light when the direction is fixed if the bridge is normal
 			if normal_bridge == 'y':	
 				if barrierPut == False and path_bridge[i-1][0] != path_bridge[i][0] != path_bridge[i+1][0]:

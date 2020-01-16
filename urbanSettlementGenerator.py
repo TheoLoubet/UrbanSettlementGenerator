@@ -209,7 +209,7 @@ def perform(level, box, options):
 			GeneratePath.generatePath(world, path, height_map, (pavementBlockID, pavementBlockSubtype))
 
 	# ==== PUT BACK UNTOUCHED TREES ====
-	TreeGestion.putBackTrees(world, height_map, list_trees)
+	TreeGestion.putBackTrees(world, height_map, list_trees) #put back the trees that are not cut buy the building and are not in unwanted places
 	# ==== UPDATE WORLD ====
 	world.updateWorld()
 
