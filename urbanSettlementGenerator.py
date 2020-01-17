@@ -76,7 +76,7 @@ def perform(level, box, options):
 				if cond1 == False: failed_conditions.append(1) 
 				cond2 = utilityFunctions.hasMinimumSize(y_min, y_max, x_min, x_max,z_min,z_max, minimum_h, minimum_w, mininum_d)
 				if cond2 == False: failed_conditions.append(2) 
-				cond3 = utilityFunctions.hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, threshold)
+				cond3 = utilityFunctions.hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, utilityFunctions.getScoreArea_type4, threshold)
 				if cond3 == False: failed_conditions.append(3) 
 				if cond1 and cond2 and cond3:
 					score = utilityFunctions.getScoreArea_type4(height_map, x_min, x_max, z_min, z_max)
@@ -114,7 +114,7 @@ def perform(level, box, options):
 	iterate = 100
 	maximum_tries = 50
 	current_try = 0
-	minimum_lots = 20
+	minimum_lots = 30
 	available_lots = 0
 	threshold = 1
 	partitioning_list = []
@@ -139,7 +139,7 @@ def perform(level, box, options):
 					if cond1 == False: failed_conditions.append(1) 
 					cond2 = utilityFunctions.hasMinimumSize(y_min, y_max, x_min, x_max,z_min,z_max, minimum_h, minimum_w, mininum_d)
 					if cond2 == False: failed_conditions.append(2) 
-					cond3 = utilityFunctions.hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, threshold)
+					cond3 = utilityFunctions.hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, utilityFunctions.getScoreArea_type4, threshold)
 					if cond3 == False: failed_conditions.append(3) 
 					if cond1 and cond2 and cond3:
 						score = utilityFunctions.getScoreArea_type4(height_map, x_min, x_max, z_min, z_max)

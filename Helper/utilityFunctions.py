@@ -320,17 +320,9 @@ def hasMinimumSize(y_min, y_max, x_min, x_max,z_min,z_max, minimum_h=4, minimum_
 
 # Return true if a given partition has an acceptable steepness
 # according to the a scoring function and a threshold
-def hasAcceptableSteepnessOld(x_min, x_max, z_min, z_max, height_map, scoring_function, threshold = 5):
-	initial_value = height_map[x_min][z_min]
-	score = scoring_function(height_map, x_min, x_max, z_min , z_max , initial_value)
+def hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, scoring_function, threshold=1):
+	score = scoring_function(height_map, x_min, x_max, z_min , z_max)
 	if score > threshold:
-		return False
-	return True
-
-# New function that uses the type 4 function to calculate the flatness score of an area
-def hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, threshold):
-	score = getScoreArea_type4(height_map, x_min, x_max, z_min , z_max)
-	if abs(score) > threshold:
 		return False
 	return True
 
