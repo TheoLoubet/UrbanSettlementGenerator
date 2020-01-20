@@ -4,7 +4,7 @@ import logging
 # Perform earthworks on a given lot, returns the height to start construction
 def prepareLot(matrix, p, height_map):
 
-	areaScore = utilityFunctions.getScoreArea_type1(height_map, p[2],p[3], p[4], p[5], height_map[p[2]][p[4]])
+	areaScore = utilityFunctions.getScoreArea_type4(height_map, p[2],p[3], p[4], p[5])
 	logging.info("Preparing lot {} with score {}".format(p, areaScore))
 
 	if areaScore != 0:
@@ -17,10 +17,11 @@ def prepareLot(matrix, p, height_map):
 		terrain_height = max(heightCounts, key=heightCounts.get)
 		logging.info("No changes in terrain were necessary, terrain at height {}".format(terrain_height))
 		utilityFunctions.updateHeightMap(height_map, p[2], p[3], p[4], p[5], terrain_height)
-		# update the ground with the grass block
-		for x in range(x_min, x_max+1):
-			for z in range(z_min,z_max+1):
-				matrix.setValue(terrain_height, x, z, (2,0))
+		# update the ground with the most occured block
+		most_occured_block = utilityFunctions.getMostOcurredGroundBlock(matrix, height_map, p[2],p[3], p[4], p[5])
+		for x in range(p[2], p[3]+1):
+			for z in range(p[4], p[5]+1):
+				matrix.setValue(terrain_height, x, z, most_occured_block)
 		h = matrix.getMatrixY(terrain_height)
 		
 
@@ -40,7 +41,6 @@ def flattenPartition(matrix, x_min, x_max, z_min, z_max, height_map):
 
 	base_block = utilityFunctions.getMostOcurredGroundBlock(matrix, height_map, x_min, x_max, z_min, z_max)
 	logging.info("Most occurred ground block: {}".format(base_block))
-	base_block = (2,0)
 	logging.info("Flattening at height {}".format(most_ocurred_height))
 
 	for x in range(x_min, x_max+1):

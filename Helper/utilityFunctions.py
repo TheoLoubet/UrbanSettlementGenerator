@@ -11,6 +11,7 @@ import RNG
 from copy import deepcopy
 import sys
 from operator import itemgetter
+from collections import Counter
 
 air_like = [0, 6, 17, 18, 30, 31, 32, 37, 38, 39, 40, 59, 81, 83, 85, 104, 105, 106, 107, 111, 141, 142, 161, 162, 175, 78, 79, 99]
 ground_like = [1, 2, 3]
@@ -320,19 +321,13 @@ def hasMinimumSize(y_min, y_max, x_min, x_max,z_min,z_max, minimum_h=4, minimum_
 
 # Return true if a given partition has an acceptable steepness
 # according to the a scoring function and a threshold
-def hasAcceptableSteepnessOld(x_min, x_max, z_min, z_max, height_map, scoring_function, threshold = 5):
-	initial_value = height_map[x_min][z_min]
-	score = scoring_function(height_map, x_min, x_max, z_min , z_max , initial_value)
+def hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, scoring_function, threshold = 5):
+	score = scoring_function(height_map, x_min, x_max, z_min , z_max)
 	if score > threshold:
 		return False
 	return True
 
-# New function that uses the type 4 function to calculate the flatness score of an area
-def hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, threshold):
-	score = getScoreArea_type4(height_map, x_min, x_max, z_min , z_max)
-	if abs(score) > threshold:
-		return False
-	return True
+
 
 # given a box selection, returns a 2d matrix where each element is
 # the height of the first non-block air in that x, z position
@@ -407,9 +402,8 @@ def getPathMap(height_map, width, depth):
 	return pathMap
 
 
-def getScoreArea_type1(height_map, min_x, max_x, min_z, max_z, initial_value=None):
-	if initial_value == None:
-		initial_value = height_map[min_x][min_z]
+def getScoreArea_type1(height_map, min_x, max_x, min_z, max_z):
+	initial_value = height_map[min_x][min_z]
 
 	ocurred_values = []
 	value = 0
@@ -420,9 +414,8 @@ def getScoreArea_type1(height_map, min_x, max_x, min_z, max_z, initial_value=Non
 				ocurred_values.append(difference)
   	return len(ocurred_values)
 
-def getScoreArea_type2(height_map, min_x, max_x, min_z, max_z, initial_value=None):
-	if initial_value == None:
-		initial_value = height_map[min_x][min_z]
+def getScoreArea_type2(height_map, min_x, max_x, min_z, max_z):
+	initial_value = height_map[min_x][min_z]
 
 	value = 0
 	for x in range(min_x, max_x+1):
@@ -430,9 +423,8 @@ def getScoreArea_type2(height_map, min_x, max_x, min_z, max_z, initial_value=Non
 			value += abs(initial_value - height_map[x][z])
   	return value
 
-def getScoreArea_type3(height_map, min_x, max_x, min_z, max_z, initial_value=None):
-	if initial_value == None:
-		initial_value = height_map[min_x][min_z]
+def getScoreArea_type3(height_map, min_x, max_x, min_z, max_z):
+	initial_value = height_map[min_x][min_z]
 
 	value = 0
 	for x in range(min_x, max_x+1):
@@ -475,22 +467,15 @@ def getHeightCounts(matrix, min_x, max_x, min_z, max_z):
 	return flood_values
 
 def getMostOcurredGroundBlock(matrix, height_map, min_x, max_x, min_z, max_z):
-	block_values = {}
+	block_values = []
 	for x in range(min_x, max_x+1):
-		for z in range(min_z, max_z+1):
-			groundBlock = matrix.getValue(height_map[x][z], x, z)
-			if type(groundBlock) == tuple:
-				groundBlock = groundBlock[0]
-			if groundBlock not in block_values.keys():
-				block_values[groundBlock] = 1
-			else:
-				block_values[groundBlock] += 1
-	for key in sorted(block_values, key=block_values.get):
-		if key not in air_like:
-			return (key, 0)
+		block_values.append(getBlockFullValue(matrix, height_map[x][max_z], x, max_z))
+		block_values.append(getBlockFullValue(matrix, height_map[x][min_z], x, min_z))
+	for z in range(min_z+1, max_z):
+		block_values.append(getBlockFullValue(matrix, height_map[max_x][z], max_x, z))
+		block_values.append(getBlockFullValue(matrix, height_map[min_x][z], min_x, z))
 
-	grass_block = (2,0)
-	return grass_block
+	return mostOccured(block_values)
 
 
 # receives a list of areas in the format (x_min, x_max, z_min, z_max)
@@ -670,3 +655,7 @@ def getBlockFullValue(matrix, h, w, d):
 		block = matrix.level.blockAt(x,y,z)
 		data = matrix.level.blockDataAt(x,y,z)
 		return (block, data)
+
+def mostOccured(l):
+    occurence_count = Counter(l)
+    return occurence_count.most_common(1)[0][0]

@@ -51,7 +51,7 @@ def checkIfTreeUntouched(matrix, tree): #check that nothing was built on the pos
 			return False
 	return True
 
-def checkIfGroundValid(matrix, height_map, origin): #check that the tree is not above a path, or in a building lot
+def checkIfGroundValid(matrix, height_map, origin): #check that the tree is not above a path, a rail, or in a building lot
 	(b, d) = utilityFunctions.getBlockFullValue(matrix, origin[0]-1, origin[1], origin[2])
 	if (b, d) == (0,0) or b == 65:
 		return False
@@ -59,7 +59,8 @@ def checkIfGroundValid(matrix, height_map, origin): #check that the tree is not 
 		for x in range(origin[1]-2, origin[1]+3):
 			for z in range(origin[2]-2, origin[2]+3):
 				try:
-					if height_map[x][z] == -1 or utilityFunctions.getBlockFullValue(matrix, height_map[x][z], x, z) == (1,6):
+					(b, d) = utilityFunctions.getBlockFullValue(matrix, height_map[x][z], x, z)
+					if height_map[x][z] == -1 or (b, d) == (1,6) or b in [27, 28, 66, 157]:
 						return False
 				except:
 					continue
