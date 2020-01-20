@@ -114,7 +114,7 @@ def perform(level, box, options):
 	iterate = 100
 	maximum_tries = 50
 	current_try = 0
-	minimum_lots = 20
+	minimum_lots = 30
 	available_lots = 0
 	threshold = 1
 	partitioning_list = []

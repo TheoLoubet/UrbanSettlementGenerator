@@ -327,8 +327,6 @@ def hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, scoring_funct
 		return False
 	return True
 
-
-
 # given a box selection, returns a 2d matrix where each element is
 # the height of the first non-block air in that x, z position
 def getHeightMap(level, box):
