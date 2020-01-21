@@ -18,36 +18,44 @@ def prepareMap(matrix, height_map):
 
 def findFullTree(matrix, height_map, h, xt, zt):
 	tree_block = []
-	tree_block.append((h, xt, zt, utilityFunctions.getBlockFullValue(matrix, h, xt, zt))) #add the first trunk because we don't want leaves on the first level
-	h += 1
-	while matrix.getValue(h, xt, zt) in trunk_like: #find all the leaves that are around the trunk level by level
+	height_tree = 0
+	while matrix.getValue(h+height_tree, xt, zt) in trunk_like: #find all the leaves that are around the trunk level by level
 		distance = 1
 		visited = []
 		block_to_expand_queue = [(xt, zt)]
 		new_block_queue = []
-		tree_block.append((h, xt, zt, utilityFunctions.getBlockFullValue(matrix, h, xt, zt)))
-		while distance <= 3: #go through the level and find the leaves without going too far
-			while len(block_to_expand_queue) != 0:
-				actual_block = block_to_expand_queue.pop()
-				addSameLevelTreeBlockToQueue(matrix, h, new_block_queue, visited, tree_block, actual_block, (xt, zt))
-			block_to_expand_queue = new_block_queue
-			new_block_queue = []
-			distance += 1
-		h += 1
+		tree_block.append((h+height_tree, xt, zt, utilityFunctions.getBlockFullValue(matrix, h+height_tree, xt, zt)))
+		if height_tree < 12:
+			while distance <= 3: #go through the level and find the leaves without going too far
+				while len(block_to_expand_queue) != 0:
+					actual_block = block_to_expand_queue.pop()
+					addSameLevelTreeBlockToQueue(matrix, h+height_tree, new_block_queue, visited, tree_block, actual_block, (xt, zt))
+				block_to_expand_queue = new_block_queue
+				new_block_queue = []
+				distance += 1
+		else:
+			while distance <= 5: #go through the level and find the leaves without going too far
+				while len(block_to_expand_queue) != 0:
+					actual_block = block_to_expand_queue.pop()
+					addSameLevelTreeBlockToQueue(matrix, h+height_tree, new_block_queue, visited, tree_block, actual_block, (xt, zt))
+				block_to_expand_queue = new_block_queue
+				new_block_queue = []
+				distance += 1
+		height_tree += 1
 	#do the same once again for one level above the last block of trunk, since there can be leaves up there
 	distance = 1
 	visited = []
 	block_to_expand_queue = [(xt, zt)]
 	new_block_queue = []
-	tree_block.append((h, xt, zt, utilityFunctions.getBlockFullValue(matrix, h, xt, zt)))
+	tree_block.append((h+height_tree, xt, zt, utilityFunctions.getBlockFullValue(matrix, h+height_tree, xt, zt)))
 	while distance <= 3:
 		while len(block_to_expand_queue) != 0:
 			actual_block = block_to_expand_queue.pop()
-			addSameLevelTreeBlockToQueue(matrix, h, new_block_queue, visited, tree_block, actual_block, (xt, zt))
+			addSameLevelTreeBlockToQueue(matrix, h+height_tree, new_block_queue, visited, tree_block, actual_block, (xt, zt))
 		block_to_expand_queue = new_block_queue
 		new_block_queue = []
 		distance +=1
-	h+=1
+	height_tree += 1
 
 	return tree_block
 
@@ -55,7 +63,7 @@ def addSameLevelTreeBlockToQueue(matrix, h, new_block_queue, visited, tree_block
 	for neighbor_position in [(1, 0),(-1, 0),(0, 1),(0, -1)]:
 		neighbor_block = (actual_block[0] + neighbor_position[0], actual_block[1] + neighbor_position[1])
 		try:
-			if neighbor_block not in visited and matrix.getValue(h, neighbor_block[0], neighbor_block[1]) in leaf_like and abs(xt-neighbor_block[0])!=3 and abs(zt-neighbor_block[1])!=3:
+			if neighbor_block not in visited and matrix.getValue(h, neighbor_block[0], neighbor_block[1]) in leaf_like+trunk_like+[78] and abs(xt-neighbor_block[0])!=3 and abs(zt-neighbor_block[1])!=3:
 				tree_block.append((h, neighbor_block[0], neighbor_block[1], utilityFunctions.getBlockFullValue(matrix, h, neighbor_block[0], neighbor_block[1])))
 				new_block_queue.append(neighbor_block)
 		except:
@@ -102,7 +110,7 @@ def addNeighborTreeBlockToQueue(matrix, block_q, actual_block): #get all the nei
 	for neighbor_position in [(1, 0, 0),(-1, 0, 0),(0, 1, 0),(0, -1, 0),(0, 0, 1),(0, 0, -1)]:
 		neighbor_block = (actual_block[0] + neighbor_position[0], actual_block[1] + neighbor_position[1], actual_block[2] + neighbor_position[2])
 		try:
-			if matrix.getValue(neighbor_block[0], neighbor_block[1], neighbor_block[2]) in leaf_like+trunk_like+[106, 99, 100]:
+			if matrix.getValue(neighbor_block[0], neighbor_block[1], neighbor_block[2]) in leaf_like+trunk_like+[106, 99, 100, 78]:
 				block_q.append(neighbor_block)
 		except:
 			continue
