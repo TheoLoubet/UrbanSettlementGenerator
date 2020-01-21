@@ -136,7 +136,7 @@ def buildBridge(matrix, path_bridge, h_bridge, h_start, normal_bridge):
 			setIfCorrect(matrix, h_bridge, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val, (43,0))
 			setIfCorrect(matrix, h_bridge, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val, (43,0))
 			#Build the barrier and light when the direction is fixed if the bridge is normal
-			if normal_bridge == True and barrierPut == False and len(path_bridge) - i >= 4:
+			if normal_bridge == True and barrierPut == False and len(path_bridge) - i >= 3:
 				if path_bridge[i-1][0] != path_bridge[i][0] != path_bridge[i+1][0]:
 					buildBarrierX(matrix, h_bridge, path_bridge[i:len(path_bridge)])
 					barrierPut = True

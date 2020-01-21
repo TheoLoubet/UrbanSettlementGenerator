@@ -226,7 +226,7 @@ def generateCenterAndNeighbourhood(space, height_map):
 
 def generateBuilding(matrix, p, height_map, simple_height_map):
 
-	h = prepareLot(matrix, p, height_map)
+	h = prepareLot(matrix, p, height_map, (43, 0))
 	building = GenerateBuilding.generateBuilding(matrix, h, p[1],p[2],p[3], p[4], p[5])
 	utilityFunctions.updateHeightMap(height_map, p[2]+1, p[3]-2, p[4]+1, p[5]-2, -1)
 	utilityFunctions.updateHeightMap(simple_height_map, p[2]+1, p[3]-2, p[4]+1, p[5]-2, -1)
@@ -241,7 +241,7 @@ def generateHouse(matrix, p, height_map, simple_height_map):
 			line += str(height_map[x][z])+" "
 		logging.info(line)
 				
-	h = prepareLot(matrix, p, height_map)
+	h = prepareLot(matrix, p, height_map, None)
 
 	logging.info("Terrain after flattening: ")
 	for x in range (p[2], p[3]):
