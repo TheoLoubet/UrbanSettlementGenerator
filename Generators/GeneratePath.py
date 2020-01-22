@@ -31,7 +31,6 @@ def generatePath(matrix, path, height_map, pavementBlock = (1,6), baseBlock=(3,0
 		x = block[0]
 		z = block[1]
 		h = height_map[x][z]
-		h = matrix.getMatrixY(h)
 
 		matrix.setValue(h,x,z,pavementBlock)
 		fillUnderneath(matrix, h-1, x, z, pavementBlock)
@@ -39,12 +38,10 @@ def generatePath(matrix, path, height_map, pavementBlock = (1,6), baseBlock=(3,0
 
 		next_block = path[i+1]
 		next_h = height_map[next_block[0]][next_block[1]]
-		next_h = matrix.getMatrixY(h)
 
 		if i!=0:
 			previous_block = path[i-1]
 			previous_h = height_map[previous_block[0]][previous_block[1]]
-			previous_h = matrix.getMatrixY(h)
 
 
 		logging.info("Generating road at point {}, {}, {}".format(h, x, z))
@@ -117,7 +114,6 @@ def generatePath(matrix, path, height_map, pavementBlock = (1,6), baseBlock=(3,0
 
 		next_block = path[i+1]
 		next_h = height_map[next_block[0]][next_block[1]]
-		next_h = matrix.getMatrixY(next_h)
 
 		orientation = getOrientation(x, z, next_block[0], next_block[1])
 		if abs(h-next_h) > 1:
