@@ -15,8 +15,8 @@ def generateBridge(matrix, height_map, p1, p2): #generate a bridge between p1 an
 		min_point = p2
 		max_point = p1
 
-	cleanFundation(matrix, p1, height_map)
-	cleanFundation(matrix, p2, height_map)
+	"""	cleanFundation(matrix, p1, height_map)
+	cleanFundation(matrix, p2, height_map)"""
 
 	#get the path for the 2 side of the bridge
 	middlepoint = (int((p1[0]+p2[0])/2),(int((p1[1]+p2[1])/2)))
@@ -47,8 +47,10 @@ def generateBridge(matrix, height_map, p1, p2): #generate a bridge between p1 an
 			else:
 				#dig if height difference still too big
 				while height_map[min_point[0]][min_point[1]] + len(path_bridge)*0.5 < height_map[max_point[0]][max_point[1]]:
+					matrix.setValue(height_map[max_point[0]][max_point[1]], max_point[0], max_point[1], (0, 0))
 					height_map[max_point[0]][max_point[1]] -= 1
-				cleanFundation(matrix, max_point, height_map)
+				#cleanFundation(matrix, max_point, height_map)
+				fillUnder(matrix, height_map[max_point[0]][max_point[1]], max_point[0], max_point[1])
 				buildBridge(matrix, path_bridge, max(h1,h2), min(h1,h2)+1, False)
 
 def getPathBridge(matrix, p1, p2): #find a path to link p1 to p2

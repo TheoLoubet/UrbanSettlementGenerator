@@ -73,8 +73,8 @@ def getTowerAreaInsideLot(x_min, x_max, z_min, z_max, height_map):
 	score_buildArea = utilityFunctions.getScoreArea_type1(height_map, bx_min, bx_max, bz_min, bz_max)
 
 	#check every other possible area in the parcel to find if there is an area with a worse flatness score
-	for x in range(x_min+1, x_max-tower_size+1):
-		for z in range(z_min+1, z_max-tower_size+1):
+	for x in range(x_min+2, x_max-tower_size):
+		for z in range(z_min+2, z_max-tower_size):
 			nx_min = x
 			nx_max = x + tower_size-1
 			nz_min = z
