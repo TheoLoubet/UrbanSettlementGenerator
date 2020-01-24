@@ -22,7 +22,7 @@ start_time = time.time()
 # change to INFO if you want a verbose log!
 for handler in logging.root.handlers[:]:
    logging.root.removeHandler(handler)
-logging.basicConfig(filename="log", level=logging.INFO, filemode='w')
+logging.basicConfig(filename="log", level=logging.WARNING, filemode='w')
 
 # remove INFO logs from pymclevel
 #logging.getLogger("pymclevel").setLevel(logging.WARNING)
@@ -282,10 +282,10 @@ def generateFarm(matrix, p, height_map, farmType = None):
 
 def generateSlopeStructure(matrix, p, height_map, simple_height_map):
 	logging.info("Trying to generate a RollerCoaster in lot {}".format(p))
-	structure = GenerateSlopeStructure.generateSlopeStructure(matrix, height_map, p[1], p[2], p[3], p[4], p[5], True)
-	if structure == False:
-		logging.info("Generating RollerCoaster failed, Generating Tower instead")
-		structure = generateTower(matrix, p, height_map, simple_height_map)
+	#structure = GenerateSlopeStructure.generateSlopeStructure(matrix, height_map, p[1], p[2], p[3], p[4], p[5], True)
+	#if structure == False:
+	logging.info("Generating RollerCoaster failed, Generating Tower instead")
+	structure = generateTower(matrix, p, height_map, simple_height_map)
 	return structure
 
 def generateTower(matrix, p, height_map, simple_height_map):

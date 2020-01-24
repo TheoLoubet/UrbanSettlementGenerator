@@ -104,7 +104,7 @@ def generatePath(matrix, path, height_map, pavement_Type):
 		return (-1, -1)
 
 	def isNeighborLight(matrix,height_map, x, z): #return True if a light is neighbor to the position x, y
-		for neighbor_position in [(0, -1), (0, 1), (-1, 0), (1, 0)]:
+		for neighbor_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)]:
 			new_position = (x + neighbor_position[0], z + neighbor_position[1])
 			try:
 				(b, d) = utilityFunctions.getBlockFullValue(matrix, height_map[new_position[0]][new_position[1]]+1, new_position[0], new_position[1])
