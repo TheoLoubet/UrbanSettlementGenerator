@@ -113,6 +113,7 @@ def aStar(p1, p2, pathMap, height_map):
 			open_dict[child.position] = child
 
 	logging.info("(A*) Finished search, could not found a path between {} and {}, Total iterations; {}".format(p1, p2, iterations))
+	print("(A*) Finished search, could not found a path between {} and {}, Total iterations; {}".format(p1, p2, iterations))
 
 def simpleAStar(p1, p2, pathMap, height_map):
 
@@ -214,6 +215,7 @@ def simpleAStar(p1, p2, pathMap, height_map):
 			open_dict[child.position] = child
 
 	logging.info("(A*) Finished search, could not found a path between {} and {}, Total iterations; {}".format(p1, p2, iterations))
+	print("(A*) Finished search, could not found a path between {} and {}, Total iterations; {}".format(p1, p2, iterations))
 
 def getManhattanDistance(p1,p2):
 	distance = abs(p1[0] - p2[0]) + abs(p1[1] - p2[1])

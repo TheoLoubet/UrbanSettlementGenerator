@@ -12,15 +12,15 @@ def generateBuilding(matrix, h_min, h_max, x_min, x_max, z_min, z_max):
 	building = utilityFunctions.dotdict()
 	building.type = "building"
 
-	building.area = utilityFunctions.dotdict({"y_min": h_min, "y_max": h_max, "x_min": x_min, "x_max": x_max, "z_min": z_min, "z_max": z_max})
+	building.lotArea = utilityFunctions.dotdict({"y_min": h_min, "y_max": h_max, "x_min": x_min, "x_max": x_max, "z_min": z_min, "z_max": z_max})
 
 	utilityFunctions.cleanProperty(matrix, h_min+1, h_max, x_min, x_max, z_min, z_max)
 
 	(h_min, h_max, x_min, x_max, z_min, z_max) = getBuildingAreaInsideLot(h_min, h_max, x_min, x_max, z_min, z_max)
-	building.constructionArea = (h_min, h_max, x_min, x_max, z_min, z_max)
+	building.buildArea = (h_min, h_max, x_min, x_max, z_min, z_max)
 
-	logging.info("Generating house at area {}".format(building.area))
-	logging.info("Construction area {}".format(building.constructionArea))
+	logging.info("Generating building at area {}".format(building.lotArea))
+	logging.info("Construction area {}".format(building.buildArea))
 
 	wall = (159, random.randint(0,15))
 	ceiling = wall
@@ -43,8 +43,8 @@ def generateBuilding(matrix, h_min, h_max, x_min, x_max, z_min, z_max):
 		door_x = RNG.randint(x_min+1, x_max-1)
 		door_z = z_max
 		generateDoor(matrix, h_min+1, door_x, door_z, (64,9), (64,3))
-		building.entranceLot = (door_x, building.area.z_max)
-		for z in range(door_z+1, building.area.z_max):
+		building.entranceLot = (door_x, building.lotArea.z_max)
+		for z in range(door_z+1, building.lotArea.z_max+1):
 			matrix.setValue(h_min,door_x,z, (1,6))
 			matrix.setValue(h_min,door_x-1,z, (1,6))
 			matrix.setValue(h_min,door_x+1,z, (1,6))

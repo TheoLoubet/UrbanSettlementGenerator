@@ -7,6 +7,7 @@ from collections import defaultdict
 from AStar import aStar
 from AStar import simpleAStar
 from Matrix import Matrix
+from VillageDeck import VillageDeck
 import RNG
 from copy import deepcopy
 import sys
@@ -66,7 +67,7 @@ def findTerrain_old(level, x, z, miny, maxy):
 			return y-1
 		# print level.blockAt(x,y,z)
 	return -1
-	
+
 
 
 # returns a 2d matrix representing tree trunk locations on an x-z coordinate basis (bird's eye view) in the given box
@@ -104,7 +105,7 @@ def getBoxSize(box):
 	return (box.maxx - box.minx, box.maxy - box.miny, box.maxz - box.minz)
 
 # returns an array of blocks after raytracing from (x1,y1,z1) to (x2,y2,z2)
-# this uses Bresenham 3d algorithm, taken from a modified version written by Bob Pendleton  
+# this uses Bresenham 3d algorithm, taken from a modified version written by Bob Pendleton
 def raytrace((x1, y1, z1), (x2, y2, z2)):
 	output = []
 
@@ -141,7 +142,7 @@ def raytrace((x1, y1, z1), (x2, y2, z2)):
 	dx2 = l << 1
 	dy2 = m << 1
 	dz2 = n << 1
-    
+
 	if l >= m and l >= n:
 		err_1 = dy2 - l
 		err_2 = dz2 - l
@@ -159,7 +160,7 @@ def raytrace((x1, y1, z1), (x2, y2, z2)):
 			err_1 += dy2
 			err_2 += dz2
 			point[0] += x_inc
-        
+
 	elif m >= l and m >= n:
 		err_1 = dx2 - m
 		err_2 = dz2 - m
@@ -177,8 +178,8 @@ def raytrace((x1, y1, z1), (x2, y2, z2)):
 			err_1 += dx2
 			err_2 += dz2
 			point[1] += y_inc
-        
-	else: 
+
+	else:
 		err_1 = dy2 - n
 		err_2 = dx2 - n
 		for i in range(n):
@@ -211,7 +212,7 @@ def drillDown(level,box):
 
 # Given an x an z coordinate, this will go from box.miny to maxy and return the first block under an air block
 def findTerrain(level, x, z, miny, maxy):
-	
+
 
 	blocks = []
 	for y in xrange(maxy-1, miny-1, -1):
@@ -249,10 +250,15 @@ class dotdict(dict):
             raise AttributeError
         return self.get(attr, None)
 
-# generate and return 3d matrix as in the format matrix[h][w][d] 
+# generate and return 3d matrix as in the format matrix[h][w][d]
 def generateMatrix(level, box, width, depth, height):
-	matrix = Matrix(level, box, height, width, depth)			
+	matrix = Matrix(level, box, height, width, depth)
 	return matrix
+
+# generate and return a village in the form of a deck composed with a specific number of buildings
+def generateVillageDeck(type, width, height):
+	villageDeck = VillageDeck(type, width, height)
+	return villageDeck
 
 # get a subsection of a give arean partition based on the percentage
 def getSubsection(y_min, y_max, x_min, x_max, z_min, z_max, percentage=0.8):
@@ -287,7 +293,7 @@ def subtractPartition(outer, inner):
 	return (p1,p2,p3,p4)
 
 def getEuclidianDistancePartitions(p1, p2):
-	
+
 	p1_center = (p1[0] + int((p1[1]-p1[0])*0.5), p1[2] + int((p1[3]-p1[2])*0.5))
 	p2_center = (p2[0] + int((p2[1]-p2[0])*0.5), p2[2] + int((p2[3]-p2[2])*0.5))
 	euclidian_distance = getEuclidianDistance(p1_center,p2_center)
@@ -305,7 +311,7 @@ def getManhattanDistance(p1,p2):
 # Given a partition and height map, return true if there's no water
 # or other unwalkable block inside that partition
 def hasValidGroundBlocks(x_min, x_max,z_min,z_max, height_map):
-	
+
 	for x in range(x_min, x_max+1):
 		for z in range(z_min, z_max+1):
 			if height_map[x][z] == -1:
@@ -332,7 +338,7 @@ def hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, scoring_funct
 def getHeightMap(level, box):
 	logging.info("Calculating height map...")
 	terrain = [[0 for z in range(box.minz,box.maxz)] for x in range(box.minx,box.maxx)]
-	
+
 	for d, z in zip(range(box.minz,box.maxz), range(0, box.maxz-box.minz)):
 		for w, x in zip(range(box.minx,box.maxx), range(0, box.maxx-box.minx)):
 			terrain[x][z] = findTerrain(level, w, d, box.miny, box.maxy)
@@ -345,7 +351,7 @@ def getHeightMap(level, box):
 def getSimpleHeightMap(level,box):
 	logging.info("Calculating simple height map...")
 	terrain = [[0 for z in range(box.minz,box.maxz)] for x in range(box.minx,box.maxx)]
-	
+
 	for d, z in zip(range(box.minz,box.maxz), range(0, box.maxz-box.minz)):
 		for w, x in zip(range(box.minx,box.maxx), range(0, box.maxx-box.minx)):
 			terrain[x][z] = findSimpleTerrain(level, w, d, box.miny, box.maxy)
@@ -381,22 +387,22 @@ def getPathMap(height_map, width, depth):
 				if pathMap[x][z].right > threshold or height_map[x+1][z] == -1:
 					pathMap[x][z].right = -1
 
-			#down 
+			#down
 			if z-1 < 0:
 				pathMap[x][z].down = -1
 			else:
 				pathMap[x][z].down = abs(height_map[x][z] - height_map[x][z-1])
 				if pathMap[x][z].down > threshold or height_map[x][z-1] == -1:
-					pathMap[x][z].down = -1			
+					pathMap[x][z].down = -1
 
-			#up 
+			#up
 			if z+1 >= depth:
 				pathMap[x][z].up = -1
 			else:
 				pathMap[x][z].up = abs(height_map[x][z+1] - height_map[x][z])
 				if pathMap[x][z].up > threshold or height_map[x][z+1] == -1:
 					pathMap[x][z].up = -1
-			
+
 	return pathMap
 
 
@@ -489,7 +495,7 @@ def removeOverlaping(areas):
 		current_area = areas[0]
 		for index, a in enumerate(validAreas):
 			if intersectRect(current_area, a):
-				break 
+				break
 		else:
 			validAreas.append(current_area)
 		areas = areas[1:]
@@ -499,12 +505,12 @@ def removeOverlaping(areas):
 # returns whether or not 2 partitions are colliding, must be in the format
 # (x_min, x_max, z_min, z_max)
 def intersectRect(p1, p2):
-    return not (p2[0] >= p1[1] or p2[1] <= p1[0] or p2[3] <= p1[2] or p2[2] >= p1[3])
+    return not (p2[0] > p1[1] or p2[1] < p1[0] or p2[3] < p1[2] or p2[2] > p1[3])
 
 # returns whether or not 2 partitions are colliding, must be in the format
-# (x_min, x_max, z_min, z_max)
+# (y_min, y_max, x_min, x_max, z_min, z_max)
 def intersectPartitions(p1, p2):
-    return not (p2[2] >= p1[3] or p2[3] <= p1[2] or p2[5] <= p1[4] or p2[4] >= p1[5])
+    return not (p2[2] > p1[3] or p2[3] < p1[2] or p2[5] < p1[4] or p2[4] > p1[5])
 
 def getNonIntersectingPartitions(partitioning):
 	cleaned_partitioning = []
@@ -515,7 +521,7 @@ def getNonIntersectingPartitions(partitioning):
 				intersect = True
 				break
 		if intersect == False:
-			cleaned_partitioning.append(partition) 
+			cleaned_partitioning.append(partition)
 	return cleaned_partitioning
 
 # update the minecraft world given a matrix with h,w,d dimensions, and each element in the
@@ -550,15 +556,15 @@ def getMST_Manhattan(buildings):
 	partitions.remove(selected_vertex)
 
 	while len(partitions) > 0:
-	
+
 		edges = []
 		for v in vertices:
 			logging.info("v: {}".format(v))
 			for p in partitions:
-				logging.info("\tp: {}".format(p))				
+				logging.info("\tp: {}".format(p))
 				p1 = v.entranceLot
 				p2 = p.entranceLot
-				distance = getManhattanDistance((p1[0],p1[1]), (p2[0],p2[1]))	
+				distance = getManhattanDistance((p1[0],p1[1]), (p2[0],p2[1]))
 				edges.append((distance, v, p))
 
 		edges = sorted(edges)
@@ -567,7 +573,7 @@ def getMST_Manhattan(buildings):
 		partitions.remove(edges[0][2])
 		vertices.append(edges[0][2])
 	return MST
-	
+
 
 #print a matrix given its h,w,d dimensions
 def printMatrix(matrix, height, width, depth):
@@ -625,20 +631,31 @@ def checkSameHeight(terrain, minx, maxx, minz, maxz, random_x, random_z, mininum
 
 	return True
 
+def checkSlopeTerrain(p, height_map):
+	score = getScoreArea_type1(height_map, p[2], p[3], p[4], p[5])
+	return score >= 10
+
+def getHighestPoint(height_map, x_min, x_max, z_min, z_max):
+	highestPoint = (x_min, z_min)
+	for x in range(x_min, x_max):
+		for z in range(z_min, z_max):
+			if height_map[x][z] > height_map[highestPoint[0]][highestPoint[1]]:
+				highestPoint = (x, z)
+	return highestPoint
+
 def findBridgeEndPoints(matrix, path, height_map): #find if bridges are needed on a path, if so, return the end points of them
 	inWater = False
 	list_bridge_end_points = []
 	for i in range(1, len(path)-1):
 
 		block = path[i]
-		next_b = path[i+1]
 		before_b = path[i-1]
 
 		if inWater == False and matrix.getValue(height_map[block[0]][block[1]], block[0], block[1]) in water_like:
 			list_bridge_end_points.append((before_b[0], before_b[1]))
 			inWater = True
 		if inWater == True and matrix.getValue(height_map[block[0]][block[1]], block[0], block[1]) not in water_like:
-			list_bridge_end_points.append((next_b[0], next_b[1]))
+			list_bridge_end_points.append((block[0], block[1]))
 			inWater = False
 
 	return list_bridge_end_points

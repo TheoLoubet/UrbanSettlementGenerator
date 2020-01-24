@@ -7,12 +7,18 @@ trunk_like = [17]
 leaf_like = [18]
 
 def prepareMap(matrix, height_map):
+	logging.info("Finding all the trees on the map")
 	list_trees = []
 	for x in range(0, len(height_map)):
 		for z in range(0, len(height_map[0])):
 				if matrix.getValue(height_map[x][z]+1, x, z) in trunk_like: #find all positions of the trunk of the trees that are on the map
+					logging.info("Tree found in {}".format((x, z)))
 					list_trees.append((findFullTree(matrix, height_map, height_map[x][z], x, z), (height_map[x][z]+1, x, z))) #save the positions of all the blocks of the threes in a list
-	
+				elif matrix.getValue(height_map[x][z]+1, x, z) == 162: #check if it's an acacia tree
+					logging.info("Acacia tree found in {}".format((x, z)))
+					list_trees.append((findFullAcacia(matrix, height_map, height_map[x][z], x, z), (height_map[x][z]+1, x, z)))
+
+	logging.info("Erasing all the trees")
 	eraseAllTrees(list_trees, matrix) #erase all the trees
 	return list_trees #return the list so we know where the trees were placed
 
@@ -75,7 +81,7 @@ def addSameLevelTreeBlockToQueue(matrix, h, new_block_queue, visited, tree_block
 
 def putBackTrees(matrix, height_map, list_trees): #go through the list saved and see if all the blocks of a tree are valid, if so we put the tree back using the id we saved for each block
 	for tree, origin in list_trees:
-		if checkIfGroundValid(matrix, height_map, origin) == True and checkIfTreeUntouched(matrix, tree) == True: #check validity of a tree saved
+		if checkIfGroundValid(matrix, height_map, tree) == True and checkIfTreeUntouched(matrix, tree) == True: #check validity of a tree saved
 			for h, x, z, i in tree:
 				matrix.setValue(h, x, z, i)
 
@@ -85,19 +91,29 @@ def checkIfTreeUntouched(matrix, tree): #check that nothing was built on the pos
 			return False
 	return True
 
-def checkIfGroundValid(matrix, height_map, origin): #check that the tree is not above a path, a rail, or in a building lot
-	(b, d) = utilityFunctions.getBlockFullValue(matrix, origin[0]-1, origin[1], origin[2])
-	if (b, d) == (0,0) or b == 65:
-		return False
-	else:
-		for x in range(origin[1]-3, origin[1]+4):
-			for z in range(origin[2]-3, origin[2]+4):
-				try:
-					(b, d) = utilityFunctions.getBlockFullValue(matrix, height_map[x][z], x, z)
-					if height_map[x][z] == -1 or (b, d) == (1,6) or b in [27, 28, 66, 157, 17]:
-						return False
-				except:
-					continue
+def checkIfGroundValid(matrix, height_map, tree): #check that the tree is not above a path, a rail, or in a building lot
+	min_x = 255
+	max_x = 0
+	min_z = 255
+	max_z = 0
+	for h, x, z, i in tree:
+		if x > max_x:
+			max_x = x
+		if x < min_x:
+			min_x = x
+		if z > max_z:
+			max_z = z
+		if z < min_z:
+			min_z = z
+
+	for x in range(min_x, max_x+1):
+		for z in range(min_z, max_z+1):
+			try:
+				(b, d) = utilityFunctions.getBlockFullValue(matrix, height_map[x][z], x, z)
+				if height_map[x][z] == -1 or (b, d) == (1,6) or b in [27, 28, 66, 157, 17]:
+					return False
+			except:
+				continue
 	return True
 
 def eraseAllTrees(list_trees, matrix): #use a BFS approach to erase all the tree by using their origins as starting nodes
@@ -118,3 +134,51 @@ def addNeighborTreeBlockToQueue(matrix, block_q, actual_block): #get all the nei
 		except:
 			continue
 	return block_q
+
+def findFullAcacia(matrix, height_map, h, xt, zt):
+	tree_block = []
+	height_tree = 1
+	while matrix.getValue(h+height_tree, xt, zt) in trunk_like: #find all the leaves that are around the trunk level by level
+		distance = 1
+		visited = []
+		block_to_expand_queue = [(h+height_tree, xt, zt)]
+		new_block_queue = []
+		tree_block.append((h+height_tree, xt, zt, utilityFunctions.getBlockFullValue(matrix, h+height_tree, xt, zt)))
+		while distance <= 5: #go through the level and find the leaves without going too far
+			while len(block_to_expand_queue) != 0:
+				actual_block = block_to_expand_queue.pop()
+				addSameLevelAcaciaBlockToQueue(matrix, h+height_tree, new_block_queue, visited, tree_block, actual_block, (xt, zt))
+			block_to_expand_queue = new_block_queue
+			new_block_queue = []
+			distance += 1
+		height_tree += 1
+	#do the same once again for one level above the last block of trunk, since there can be leaves up there
+	distance = 1
+	visited = []
+	block_to_expand_queue = [(h+height_tree, xt, zt)]
+	new_block_queue = []
+	tree_block.append((h+height_tree, xt, zt, utilityFunctions.getBlockFullValue(matrix, h+height_tree, xt, zt)))
+	while distance <= 5:
+		while len(block_to_expand_queue) != 0:
+			actual_block = block_to_expand_queue.pop()
+			addSameLevelAcaciaBlockToQueue(matrix, h+height_tree, new_block_queue, visited, tree_block, actual_block, (xt, zt))
+		block_to_expand_queue = new_block_queue
+		new_block_queue = []
+		distance +=1
+	height_tree += 1
+
+	return tree_block
+
+def addSameLevelAcaciaBlockToQueue(matrix, h, new_block_queue, visited, tree_block, actual_block, (xt, zt)):
+	for neighbor_position in [(0, 1, 0),(0, -1, 0),(0, 0, 1),(0, 0, -1), (1, 1, 0),(1, -1, 0),(1, 0, 1),(1, 0, -1), (-1, 1, 0),(-1, -1, 0),(-1, 0, 1),(-1, 0, -1)]:
+		neighbor_block = (actual_block[0] + neighbor_position[0], actual_block[1] + neighbor_position[1], actual_block[2] + neighbor_position[2])
+		try:
+			if neighbor_block not in visited and matrix.getValue(neighbor_block[0], neighbor_block[1], neighbor_block[2]) == 161 and abs(xt-neighbor_block[1])<=4 and abs(zt-neighbor_block[2])<=4:
+				tree_block.append((neighbor_block[0], neighbor_block[1], neighbor_block[2], utilityFunctions.getBlockFullValue(matrix, neighbor_block[0], neighbor_block[1], neighbor_block[2])))
+				new_block_queue.append(neighbor_block)
+			elif neighbor_block not in visited and matrix.getValue(neighbor_block[0], neighbor_block[1], neighbor_block[2]) == 162 and abs(xt-neighbor_block[1])<=1 and abs(zt-neighbor_block[2])<=1:
+				tree_block.append((neighbor_block[0], neighbor_block[1], neighbor_block[2], utilityFunctions.getBlockFullValue(matrix, neighbor_block[0], neighbor_block[1], neighbor_block[2])))
+				new_block_queue.append(neighbor_block)
+		except:
+			continue
+		visited.append(neighbor_block)

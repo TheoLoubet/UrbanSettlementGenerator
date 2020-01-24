@@ -382,9 +382,13 @@ def generateGarden(matrix, house):
 	list_space = findOrientationGarden(house)
 	if list_space[0][0] > 2 and list_space[1][0] > 2: #no garden if not enough space
 		findPointsGarden(house)
+		logging.info("Building garden between points {}, {}, {}, {}, {}".format(house.gardenPoint1, house.gardenPoint2, house.gardenPoint3, house.gardenPoint4, house.gardenPoint5))
 		matrix.setValue(h, house.gardenPoint1[0], house.gardenPoint1[1], (85, 0))
 		buildFence(matrix, house, house.gardenPoint1, house.gardenPoint2, h)
 		buildFence(matrix, house, house.gardenPoint2, house.gardenPoint3, h)
 		buildFence(matrix, house, house.gardenPoint3, house.gardenPoint4, h)
 		buildFence(matrix, house, house.gardenPoint4, house.gardenPoint5, h)
 		buildDoorGarden(matrix, house, h)
+
+	else:
+		logging.info("Not enough space to build garden")

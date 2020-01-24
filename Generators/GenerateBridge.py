@@ -4,6 +4,7 @@ air_like = [0, 6, 17, 18, 30, 31, 32, 37, 38, 39, 40, 59, 81, 83, 85, 104, 105, 
 water_like = [8, 9, 10, 11]
 
 def generateBridge(matrix, height_map, p1, p2): #generate a bridge between p1 and p2
+	logging.info("Trying to generate bridge between {} and {}".format(p1, p2))
 	#finding height
 	h1 = height_map[p1[0]][p1[1]]
 	h2 = height_map[p2[0]][p2[1]]
@@ -18,18 +19,21 @@ def generateBridge(matrix, height_map, p1, p2): #generate a bridge between p1 an
 	cleanFundation(matrix, p1, height_map)
 	cleanFundation(matrix, p2, height_map)
 
-	#get the path for the 2 side of the bridge
+	#get the path for the 2 sides of the bridge
+	logging.info("Get the path for the 2 sides of the bridge")
 	middlepoint = (int((p1[0]+p2[0])/2),(int((p1[1]+p2[1])/2)))
 	path_bridge1 = getPathBridge(matrix, p1, middlepoint) #first half
 	path_bridge2 = getPathBridge(matrix, p2, middlepoint) #second half
 	
 	if utilityFunctions.getManhattanDistance(p1,p2) < 6:
+		logging.info("Length of the bridge = {}, Bridge too small, building a small one".format(utilityFunctions.getManhattanDistance(p1,p2)))
 		buildSmallBridge(matrix, path_bridge1, height_map)
 		buildSmallBridge(matrix, path_bridge2, height_map)
 
 	else:
 		#check if the normal bridge is buildable 
 		if height_map[min_point[0]][min_point[1]] + len(path_bridge1)*0.5 >= h_bridge:
+			logging.info("Length of the bridge = {}, enough to go up on both sides, building a normal bridge".format(utilityFunctions.getManhattanDistance(p1,p2)))
 			#build cross in the middle of the bridge
 			matrix.setValue(h_bridge, middlepoint[0], middlepoint[1], (43,5))
 			matrix.setValue(h_bridge, middlepoint[0]+1, middlepoint[1], (43,5))
@@ -41,15 +45,14 @@ def generateBridge(matrix, height_map, p1, p2): #generate a bridge between p1 an
 			buildBridge(matrix, path_bridge1, h_bridge, h1+1, True) #first part of the bridge
 			buildBridge(matrix, path_bridge2, h_bridge, h2+1 ,True) #second part
 		else: #bridge can't be built that way, going up only from one side
+			logging.info("Length of the bridge = {}, too small to go up on both sides, trying to go up only from the lowest point".format(utilityFunctions.getManhattanDistance(p1,p2)))
 			path_bridge = getPathBridge(matrix, min_point, max_point) #full bridge
 			if height_map[min_point[0]][min_point[1]] + len(path_bridge)*0.5 >= height_map[max_point[0]][max_point[1]]: #check if the difference of height is still too big
+				logging.info("Bridge buildable from one side")
 				buildBridge(matrix, path_bridge, max(h1,h2), min(h1,h2)+1, False)
 			else:
-				#dig if height difference still too big
-				while height_map[min_point[0]][min_point[1]] + len(path_bridge)*0.5 < height_map[max_point[0]][max_point[1]]:
-					height_map[max_point[0]][max_point[1]] -= 1
-				cleanFundation(matrix, max_point, height_map)
-				buildBridge(matrix, path_bridge, max(h1,h2), min(h1,h2)+1, False)
+				logging.info("Bridge non buildable")
+				raise ValueError('Bridge non buildable')
 
 def getPathBridge(matrix, p1, p2): #find a path to link p1 to p2
 	path_bridge = []
@@ -198,10 +201,11 @@ def cleanFundation(matrix, p, height_map): #clean the endpoints of the bridge
 	h = height_map[p[0]][p[1]]
 	for neighbor_position in [(0, 0), (0, -1), (0, 1), (-1, 0), (1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]:
 		position_to_clean = (p[0] + neighbor_position[0], p[1] + neighbor_position[1])
+		if abs(height_map[position_to_clean[0]][position_to_clean[1]] - h) <= 3:
+			cleanAbove(matrix, h, position_to_clean[0], position_to_clean[1])
+			height_map[position_to_clean[0]][position_to_clean[1]] = h
 		matrix.setValue(h, position_to_clean[0], position_to_clean[1], (1,6))
 		fillUnder(matrix, h, position_to_clean[0], position_to_clean[1])
-		cleanAbove(matrix, h, position_to_clean[0], position_to_clean[1])
-		height_map[position_to_clean[0]][position_to_clean[1]] = h
 
 def buildSmallBridge(matrix, path_bridge, height_map):
 	if abs(path_bridge[0][0] - path_bridge[len(path_bridge)-1][0]) >= abs(path_bridge[0][1] - path_bridge[len(path_bridge)-1][1]):

@@ -5,6 +5,19 @@ air_like = [0, 6, 17, 18, 30, 31, 32, 37, 38, 39, 40, 59, 81, 83, 85, 104, 105, 
 ground_like = [1, 2, 3]
 water_like = [8, 9, 10, 11]
 
+def generatePath_StraightLine(matrix, x_p1, z_p1, x_p2, z_p2, height_map, pavementBlock = (1, 6)):
+	logging.info("Connecting {} and {}".format((x_p1, z_p1), (x_p2, z_p2)))
+	for x in twoway_range(x_p1, x_p2):
+		h = height_map[x][z_p1]
+		h = matrix.getMatrixY(h)
+		matrix.setValue(h,x,z_p1,pavementBlock)
+
+	for z in twoway_range(z_p1, z_p2):
+		h = height_map[x_p2][z]
+		h = matrix.getMatrixY(h)
+		matrix.setValue(h,x_p2,z, pavementBlock)
+		matrix.setValue(h+1,x_p2,z, (0,0))
+
 def generatePath(matrix, path, height_map, pavementBlock = (1,6), baseBlock=(3,0)):
 	def fillUnderneath(matrix, y, x, z, baseBlock):
 		if y < 0: return
@@ -45,7 +58,6 @@ def generatePath(matrix, path, height_map, pavementBlock = (1,6), baseBlock=(3,0
 
 
 		logging.info("Generating road at point {}, {}, {}".format(h, x, z))
-		logging.info("next_h: {}".format(next_h))
 		
 		# check if we are moving in the x axis (so to add a new pavement
 		# on the z-1, z+1 block)
@@ -110,7 +122,6 @@ def generatePath(matrix, path, height_map, pavementBlock = (1,6), baseBlock=(3,0
 		x = block[0]
 		z = block[1]
 		h = height_map[x][z]
-		h = matrix.getMatrixY(h)
 
 		next_block = path[i+1]
 		next_h = height_map[next_block[0]][next_block[1]]
