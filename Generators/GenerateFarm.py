@@ -13,6 +13,7 @@ TORCH_ID = (50, 5)
 WHEAT_ID = (59, 0)
 CARROT_ID = (141, 0)
 POTATO_ID = (142, 0)
+GRASS_PATH_ID = (208, 0)
 plants = [WHEAT_ID, CARROT_ID, POTATO_ID]
 PLANT_SPECIES_NUMBER = 3
 
@@ -31,12 +32,22 @@ def generateFarm(matrix, h_min, h_max, x_min, x_max, z_min, z_max, farmType):
 	logging.info("Construction area {}".format(farm.buildArea))
 
 	farm.orientation = getOrientation()
-	farm.entranceLot = (h_min + 1, farm.lotArea.x_min, farm.lotArea.z_min)
 
 	if farmType == None:
 		generateBasicPattern(matrix, h_min, x_min, x_max, z_min, z_max)
 	elif farmType == "smiley":
 		generateSmileyPattern(matrix, h_min, x_min, x_max, z_min, z_max)
+		
+	#create door and entrance path
+	if farm.orientation == "S":
+		door_x = x_max - 2
+		door_z = z_max - 1
+		matrix.setValue(h_min+1, door_x, door_z, OAK_FENCE_GATE)
+		farm.entranceLot = (door_x, farm.lotArea.z_max)
+		for z in range(door_z+1, farm.lotArea.z_max+1):
+			matrix.setValue(h_min,door_x,z, GRASS_PATH_ID)
+			matrix.setValue(h_min,door_x-1,z, GRASS_PATH_ID)
+			matrix.setValue(h_min,door_x+1,z, GRASS_PATH_ID)
 
 	return farm
 
@@ -138,7 +149,6 @@ def generateFences(matrix, h, x_min, x_max, z_min, z_max):
 		matrix.setValue(h, x_min, z, OAK_WOOD_ID)
 		matrix.setValue(h + 1, x_max, z, FENCE_ID)
 		matrix.setValue(h + 1, x_min, z, FENCE_ID)
-	matrix.setValue(h + 1, x_max, z_max - 1, OAK_FENCE_GATE)
 	matrix.setValue(h + 2, x_min, z_max, TORCH_ID)
 	matrix.setValue(h + 2, x_min, z_min, TORCH_ID)
 	matrix.setValue(h + 2, x_max, z_max, TORCH_ID)

@@ -110,7 +110,7 @@ def checkIfGroundValid(matrix, height_map, tree): #check that the tree is not ab
 		for z in range(min_z, max_z+1):
 			try:
 				(b, d) = utilityFunctions.getBlockFullValue(matrix, height_map[x][z], x, z)
-				if height_map[x][z] == -1 or (b, d) == (1,6) or b in [27, 28, 66, 157, 17]:
+				if height_map[x][z] == -1 or (b, d) == (1,6) or b in [27, 28, 66, 157, 17, 208]:
 					return False
 			except:
 				continue
