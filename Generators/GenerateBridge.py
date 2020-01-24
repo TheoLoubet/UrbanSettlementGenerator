@@ -201,11 +201,11 @@ def cleanFundation(matrix, p, height_map): #clean the endpoints of the bridge
 	h = height_map[p[0]][p[1]]
 	for neighbor_position in [(0, 0), (0, -1), (0, 1), (-1, 0), (1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]:
 		position_to_clean = (p[0] + neighbor_position[0], p[1] + neighbor_position[1])
-		if abs(height_map[position_to_clean[0]][position_to_clean[1]] - h) <= 3:
+		if matrix.getValue(h+1, position_to_clean[0], position_to_clean[1]) != 45:
+			matrix.setValue(h, position_to_clean[0], position_to_clean[1], (1,6))
+			fillUnder(matrix, h, position_to_clean[0], position_to_clean[1])
 			cleanAbove(matrix, h, position_to_clean[0], position_to_clean[1])
 			height_map[position_to_clean[0]][position_to_clean[1]] = h
-		matrix.setValue(h, position_to_clean[0], position_to_clean[1], (1,6))
-		fillUnder(matrix, h, position_to_clean[0], position_to_clean[1])
 
 def buildSmallBridge(matrix, path_bridge, height_map):
 	if abs(path_bridge[0][0] - path_bridge[len(path_bridge)-1][0]) >= abs(path_bridge[0][1] - path_bridge[len(path_bridge)-1][1]):

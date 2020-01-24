@@ -646,7 +646,7 @@ def getHighestPoint(height_map, x_min, x_max, z_min, z_max):
 def findBridgeEndPoints(matrix, path, height_map): #find if bridges are needed on a path, if so, return the end points of them
 	inWater = False
 	list_bridge_end_points = []
-	for i in range(1, len(path)-1):
+	for i in range(1, len(path)):
 
 		block = path[i]
 		before_b = path[i-1]
