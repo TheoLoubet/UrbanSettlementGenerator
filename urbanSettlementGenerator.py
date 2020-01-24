@@ -31,7 +31,7 @@ logging.basicConfig(filename="log", level=logging.WARNING, filemode='w')
 #logging.getLogger().addHandler(logging.StreamHandler())
 
 def perform(level, box, options):
-
+	start_time = time.time()
 	logging.info("BoundingBox coordinates: ({},{}),({},{}),({},{})".format(box.miny, box.maxy, box.minx, box.maxx, box.minz, box.maxz))
 
 	# ==== PREPARATION =====
@@ -47,6 +47,7 @@ def perform(level, box, options):
 	logging.info("Generating normal height map")
 	height_map = utilityFunctions.getHeightMap(level,box)
 	#villageDeck = utilityFunctions.generateVillageDeck("city", width, depth)
+	
 	# ==== PARTITIONING OF NEIGHBOURHOODS ==== 
 	logging.info("Partitioning of the map, getting city center and neighbourhoods")
 	(center, neighbourhoods) = generateCenterAndNeighbourhood(world_space, height_map)
@@ -107,7 +108,7 @@ def perform(level, box, options):
 		available_lots = len(final_partitioning)
 		logging.info("Current partitioning with most available_lots: {}, current threshold {}".format(available_lots, threshold))
 
-		threshold += 1
+		threshold += 2
 		current_try += 1
 	
 	logging.info("Final lots ({}) for the City Centre {}: ".format(len(final_partitioning), center))
@@ -125,7 +126,7 @@ def perform(level, box, options):
 	mininum_d = 16
 
 	iterate = 100
-	maximum_tries = 100
+	maximum_tries = 80
 	current_try = 0
 	minimum_lots = 50
 	available_lots = 0
@@ -172,13 +173,14 @@ def perform(level, box, options):
 		available_lots = len(final_partitioning)
 		logging.info("Current neighbourhood partitioning with most available_lots: {}, current threshold {}".format(available_lots, threshold))
 
-		threshold += 1
+		threshold += 2
 		current_try += 1
 
 		logging.info("Final lots ({})for the neighbourhood {}: ".format(len(final_partitioning), neigh))
 		for p in final_partitioning:
 			logging.info("\t{}".format(p))
 
+	print("NB of lots : {}".format(len(final_partitioning)))
 	for i in xrange(0, int(len(final_partitioning)*0.50)+1):
 		house = generateHouse(world, final_partitioning[i], height_map, simple_height_map)
 		all_buildings.append(house)
@@ -242,9 +244,10 @@ def perform(level, box, options):
 	# ==== PUT BACK UNTOUCHED TREES ====
 	logging.info("Putting back untouched trees")
 	TreeGestion.putBackTrees(world, height_map, list_trees) #put back the trees that are not cut buy the building and are not in unwanted places
+
 	# ==== UPDATE WORLD ====
 	world.updateWorld()
-	print("{} seconds".format(time.time() - start_time))
+	print("World updated : {} seconds".format(time.time() - start_time))
 
 def generateCenterAndNeighbourhood(space, height_map):
 	neighbourhoods = []
@@ -259,7 +262,7 @@ def generateCenterAndNeighbourhood(space, height_map):
 
 def generateBuilding(matrix, p, height_map, simple_height_map):
 	logging.info("Generating a building in lot {}".format(p))
-	h = prepareLot(matrix, p, height_map, (159, 12))
+	h = prepareLot(matrix, p, height_map, (43, 8))
 	building = GenerateBuilding.generateBuilding(matrix, h, p[1],p[2],p[3], p[4], p[5])
 	utilityFunctions.updateHeightMap(height_map, p[2]+1, p[3]-1, p[4]+1, p[5]-1, -1)
 	utilityFunctions.updateHeightMap(simple_height_map, p[2]+1, p[3]-1, p[4]+1, p[5]-1, -1)
@@ -282,10 +285,10 @@ def generateFarm(matrix, p, height_map, farmType = None):
 
 def generateSlopeStructure(matrix, p, height_map, simple_height_map):
 	logging.info("Trying to generate a RollerCoaster in lot {}".format(p))
-	#structure = GenerateSlopeStructure.generateSlopeStructure(matrix, height_map, p[1], p[2], p[3], p[4], p[5], True)
-	#if structure == False:
-	logging.info("Generating RollerCoaster failed, Generating Tower instead")
-	structure = generateTower(matrix, p, height_map, simple_height_map)
+	structure = GenerateSlopeStructure.generateSlopeStructure(matrix, height_map, p[1], p[2], p[3], p[4], p[5], True)
+	if structure == False:
+		logging.info("Generating RollerCoaster failed, Generating Tower instead")
+		structure = generateTower(matrix, p, height_map, simple_height_map)
 	return structure
 
 def generateTower(matrix, p, height_map, simple_height_map):

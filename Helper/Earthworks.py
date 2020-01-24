@@ -20,6 +20,8 @@ def prepareLot(matrix, p, height_map, block):
 		# update the ground with the most occured block
 		if block == None:
 			block = utilityFunctions.getMostOcurredGroundBlock(matrix, height_map, p[2],p[3], p[4], p[5])
+			if block == (3, 0):
+				block = (2, 0)
 		for x in range(p[2], p[3]+1):
 			for z in range(p[4], p[5]+1):
 				matrix.setValue(terrain_height, x, z, block)
@@ -42,6 +44,8 @@ def flattenPartition(matrix, x_min, x_max, z_min, z_max, height_map, block):
 
 	if block == None:
 		block = utilityFunctions.getMostOcurredGroundBlock(matrix, height_map, x_min, x_max, z_min, z_max)
+		if block == (3, 0):
+			block = (2, 0)
 	logging.info("Most occurred ground block: {}".format(block))
 	logging.info("Flattening at height {}".format(most_ocurred_height))
 

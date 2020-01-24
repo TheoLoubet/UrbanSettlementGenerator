@@ -21,7 +21,7 @@ def generateBridge(matrix, height_map, p1, p2, bridge_Type): #generate a bridge 
 		bridge_Middle_Double = (43,5)
 		bridge_Side_Bottom = (44,0)
 		bridge_Side_Top = (44,8)
-		bridge_Side_Double = (43,8)
+		bridge_Side_Double = (43,0)
 		bridge_Base = (1,6)
 		pillar_Base = (4,0)
 		pillar = (139,0)
