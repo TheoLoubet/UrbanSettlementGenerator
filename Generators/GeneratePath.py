@@ -4,6 +4,7 @@ import utilityFunctions as utilityFunctions
 air_like = [0, 6, 17, 18, 30, 31, 32, 37, 38, 39, 40, 59, 81, 83, 85, 104, 105, 106, 107, 111, 141, 142, 161, 162, 175, 78, 79, 99]
 ground_like = [1, 2, 3]
 water_like = [8, 9, 10, 11]
+light_pillar_like = [85, 139, 123, 178]
 
 def generatePath_StraightLine(matrix, x_p1, z_p1, x_p2, z_p2, height_map, pavement_Type):
 	if pavement_Type == "Grass":
@@ -60,8 +61,7 @@ def generatePath(matrix, path, height_map, pavement_Type):
 	def generateLight(matrix, block_section, path, height_map): #generate a light by using the center of mass if it is possible
 		(x, z) = computeCenterOfMass(block_section)
 
-		(b, d) = utilityFunctions.getBlockFullValue(matrix, height_map[x][z]+1, x, z)
-		if height_map[x][z] != -1 and (b, d) != light_Pillar and b != 65: #validity of the center of mass
+		if height_map[x][z] != -1 and matrix.getValue(height_map[x][z]+1, x, z) not in light_pillar_like+[65] and matrix.getValue(height_map[x][z]-1, x, z) not in air_like: #validity of the center of mass
 			if isNeighborLight(matrix,height_map, x, z) != True:
 				buildLight(matrix, height_map[x][z], x, z)
 		else:
@@ -96,8 +96,7 @@ def generatePath(matrix, path, height_map, pavement_Type):
 		for neighbor_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (1, 1), (-1, -1), (1, -1), (-1, 1)]:
 			new_position = (x + neighbor_position[0], z + neighbor_position[1])
 			try:
-				(b, d) = utilityFunctions.getBlockFullValue(matrix, height_map[new_position[0]][new_position[1]],new_position[0],new_position[1])
-				if height_map[new_position[0]][new_position[1]] != -1 and (b, d) != light_Pillar and b != 65:
+				if height_map[new_position[0]][new_position[1]] != -1 and matrix.getValue(height_map[new_position[0]][new_position[1]]+1,new_position[0],new_position[1]) not in light_pillar_like+[65] and matrix.getValue(height_map[new_position[0]][new_position[1]]-1,new_position[0],new_position[1]) not in air_like:
 					return new_position
 			except:
 				continue
@@ -107,8 +106,7 @@ def generatePath(matrix, path, height_map, pavement_Type):
 		for neighbor_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)]:
 			new_position = (x + neighbor_position[0], z + neighbor_position[1])
 			try:
-				(b, d) = utilityFunctions.getBlockFullValue(matrix, height_map[new_position[0]][new_position[1]]+1, new_position[0], new_position[1])
-				if (b, d) == light_Pillar:
+				if matrix.getValue(height_map[new_position[0]][new_position[1]]+1, new_position[0], new_position[1]) in light_pillar_like:
 					return True
 			except:
 				continue
@@ -174,8 +172,8 @@ def generatePath(matrix, path, height_map, pavement_Type):
 					fillUnderneath(matrix, h-1, x+1, z)
 					fillAbove(matrix, h+1, x+1, z, 5)
 
-			else:
-				logging.info("Road at point ({}, {}, {}) already existing, going forward".format(h, x, z))
+		else:
+			logging.info("Stone path at point ({}, {}, {}) already existing, going forward".format(h, x, z))
 
 	# another iteration over the path to generate ladders and lights
 	# this is to guarantee that fillAbove or any other
@@ -187,7 +185,7 @@ def generatePath(matrix, path, height_map, pavement_Type):
 		try:
 			(xl, zl) = findPos(matrix, path[10][0], path[10][1], path, height_map)
 		except:
-			#not enogh block left in the path, so take the position of half of what remains
+			#not enough block left in the path, so take the position of half of what remains
 			(xl, zl) = findPos(matrix, path[int(((i-len(path)-1)/2))][0], path[int(((i-len(path)-1)/2))][1], path, height_map)
 		if (xl, zl) != (-1, -1):
 			if isNeighborLight(matrix,height_map, xl, zl) != True:
@@ -219,6 +217,8 @@ def generatePath(matrix, path, height_map, pavement_Type):
 					(b, d) = utilityFunctions.getBlockFullValue(matrix, ladder_h, next_block[0], next_block[1])
 					if (b, d) != (1, 6):
 						matrix.setValue(ladder_h, next_block[0], next_block[1], (pavement_Block))
+				matrix.setValue(next_h+1, x, z, (0,0))
+				matrix.setValue(next_h+2, x, z, (0,0))
 
 			elif h > next_h:
 				if orientation == "N":   stair_subID = 2
@@ -232,6 +232,8 @@ def generatePath(matrix, path, height_map, pavement_Type):
 					(b, d) = utilityFunctions.getBlockFullValue(matrix, h, x, z)
 					if (b, d) != (1, 6):
 						matrix.setValue(ladder_h, x, z, (pavement_Block))
+				matrix.setValue(h+1, x, z, (0,0))
+				matrix.setValue(h+2, x, z, (0,0))
 
 		#build next light and update the blocksection
 		if block == block_section[len(block_section)-1]:

@@ -54,6 +54,12 @@ def generateBridge(matrix, height_map, p1, p2, bridge_Type): #generate a bridge 
 			x_val = 1
 			z_val = 0
 
+		#build cross in the middle of the bridge
+		matrix.setValue(h_bridge, middlepoint[0], middlepoint[1], bridge_Middle_Double)
+		matrix.setValue(h_bridge, middlepoint[0]+x_val, middlepoint[1]+z_val, bridge_Middle_Double)
+		matrix.setValue(h_bridge, middlepoint[0]-x_val, middlepoint[1]-z_val, bridge_Middle_Double)
+		buildPillar(matrix, h_bridge-1, middlepoint)
+
 		#_______________________main path of the bridge______________________________
 		is_half_block = True
 		h_actual = h_start
@@ -111,7 +117,7 @@ def generateBridge(matrix, height_map, p1, p2, bridge_Type): #generate a bridge 
 				setIfCorrect(matrix, h_bridge, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val, bridge_Side_Double)
 				setIfCorrect(matrix, h_bridge, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val, bridge_Side_Double)
 				#Build the barrier and light when the direction is fixed if the bridge is normal
-				if normal_bridge == True and barrierPut == False and len(path_bridge) - i >= 3:
+				if normal_bridge == True and barrierPut == False and len(path_bridge) - i >= 2:
 					if path_bridge[i-1][0] != path_bridge[i][0] != path_bridge[i+1][0]:
 						buildBarrierX(matrix, h_bridge, path_bridge[i:len(path_bridge)])
 						barrierPut = True
@@ -181,7 +187,7 @@ def generateBridge(matrix, height_map, p1, p2, bridge_Type): #generate a bridge 
 				cleanAbove(matrix, h, position_to_clean[0], position_to_clean[1])
 				height_map[position_to_clean[0]][position_to_clean[1]] = h
 
-	def buildSmallBridge(matrix, path_bridge, height_map):
+	def buildSmallBridge(matrix, path_bridge, h):
 		if abs(path_bridge[0][0] - path_bridge[len(path_bridge)-1][0]) >= abs(path_bridge[0][1] - path_bridge[len(path_bridge)-1][1]):
 			x_val = 0
 			z_val = 1
@@ -192,19 +198,17 @@ def generateBridge(matrix, height_map, p1, p2, bridge_Type): #generate a bridge 
 		for i in range(0, len(path_bridge)):
 			x = path_bridge[i][0]
 			z = path_bridge[i][1]
-			h = height_map[x][z]
 			matrix.setValue(h, x, z, bridge_Middle_Double)
 
-		#cross middle of the bridge
-		matrix.setValue(height_map[path_bridge[len(path_bridge)-1][0]][path_bridge[len(path_bridge)-1][1]], path_bridge[len(path_bridge)-1][0], path_bridge[len(path_bridge)-1][1], bridge_Middle_Double)
-		matrix.setValue(height_map[path_bridge[len(path_bridge)-1][0]][path_bridge[len(path_bridge)-1][1]], path_bridge[len(path_bridge)-1][0]+1, path_bridge[len(path_bridge)-1][1], bridge_Middle_Double)
-		matrix.setValue(height_map[path_bridge[len(path_bridge)-1][0]][path_bridge[len(path_bridge)-1][1]], path_bridge[len(path_bridge)-1][0], path_bridge[len(path_bridge)-1][1]+1, bridge_Middle_Double)
-		matrix.setValue(height_map[path_bridge[len(path_bridge)-1][0]][path_bridge[len(path_bridge)-1][1]], path_bridge[len(path_bridge)-1][0]-1, path_bridge[len(path_bridge)-1][1], bridge_Middle_Double)
-		matrix.setValue(height_map[path_bridge[len(path_bridge)-1][0]][path_bridge[len(path_bridge)-1][1]], path_bridge[len(path_bridge)-1][0], path_bridge[len(path_bridge)-1][1]-1, bridge_Middle_Double)
+		#build cross in the middle of the bridge
+		matrix.setValue(h, middlepoint[0], middlepoint[1], bridge_Middle_Double)
+		matrix.setValue(h, middlepoint[0]+x_val, middlepoint[1]+z_val, bridge_Middle_Double)
+		matrix.setValue(h, middlepoint[0]-x_val, middlepoint[1]-z_val, bridge_Middle_Double)
+		buildPillar(matrix, h-1, middlepoint)
 
 		for i in range(0, len(path_bridge)-1):
-			setIfCorrect(matrix, height_map[path_bridge[i][0]-x_val][path_bridge[i][1]-z_val], path_bridge[i][0]-x_val, path_bridge[i][1]-z_val, bridge_Side_Double)
-			setIfCorrect(matrix, height_map[path_bridge[i][0]+x_val][path_bridge[i][1]+z_val], path_bridge[i][0]+x_val, path_bridge[i][1]+z_val, bridge_Side_Double)
+			setIfCorrect(matrix, h, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val, bridge_Side_Double)
+			setIfCorrect(matrix, h, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val, bridge_Side_Double)
 
 	logging.info("Trying to generate bridge between {} and {}".format(p1, p2))
 	#finding height
@@ -218,9 +222,6 @@ def generateBridge(matrix, height_map, p1, p2, bridge_Type): #generate a bridge 
 		min_point = p2
 		max_point = p1
 
-	cleanFundation(matrix, p1, height_map)
-	cleanFundation(matrix, p2, height_map)
-
 	#get the path for the 2 sides of the bridge
 	logging.info("Get the path for the 2 sides of the bridge")
 	middlepoint = (int((p1[0]+p2[0])/2),(int((p1[1]+p2[1])/2)))
@@ -229,20 +230,17 @@ def generateBridge(matrix, height_map, p1, p2, bridge_Type): #generate a bridge 
 	
 	if utilityFunctions.getManhattanDistance(p1,p2) < 6:
 		logging.info("Length of the bridge = {}, Bridge too small, building a small one".format(utilityFunctions.getManhattanDistance(p1,p2)))
-		buildSmallBridge(matrix, path_bridge1, height_map)
-		buildSmallBridge(matrix, path_bridge2, height_map)
+		buildSmallBridge(matrix, path_bridge1, height_map[max_point[0]][max_point[1]])
+		buildSmallBridge(matrix, path_bridge2, height_map[max_point[0]][max_point[1]])
 
 	else:
+		#clean the fundations only if the bridge is not small
+		cleanFundation(matrix, p1, height_map)
+		cleanFundation(matrix, p2, height_map)
+
 		#check if the normal bridge is buildable 
 		if height_map[min_point[0]][min_point[1]] + len(path_bridge1)*0.5 >= h_bridge:
 			logging.info("Length of the bridge = {}, enough to go up on both sides, building a normal bridge".format(utilityFunctions.getManhattanDistance(p1,p2)))
-			#build cross in the middle of the bridge
-			matrix.setValue(h_bridge, middlepoint[0], middlepoint[1], bridge_Middle_Double)
-			matrix.setValue(h_bridge, middlepoint[0]+1, middlepoint[1], bridge_Middle_Double)
-			matrix.setValue(h_bridge, middlepoint[0]-1, middlepoint[1], bridge_Middle_Double)
-			matrix.setValue(h_bridge, middlepoint[0], middlepoint[1]+1, bridge_Middle_Double)
-			matrix.setValue(h_bridge, middlepoint[0], middlepoint[1]-1, bridge_Middle_Double)
-			buildPillar(matrix, h_bridge-1, middlepoint)
 			#build the bridge
 			buildBridge(matrix, path_bridge1, h_bridge, h1+1, True) #first part of the bridge
 			buildBridge(matrix, path_bridge2, h_bridge, h2+1 ,True) #second part

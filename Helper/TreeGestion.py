@@ -40,7 +40,7 @@ def findFullTree(matrix, height_map, h, xt, zt):
 				new_block_queue = []
 				distance += 1
 		else:
-			while distance <= 5: #go through the level and find the leaves without going too far
+			while distance <= 5: #expand the max distance when we reach high level, for trees like jungle trees
 				while len(block_to_expand_queue) != 0:
 					actual_block = block_to_expand_queue.pop()
 					addSameLevelTreeBlockToQueue(matrix, h+height_tree, new_block_queue, visited, tree_block, actual_block, (xt, zt))

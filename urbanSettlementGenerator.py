@@ -17,12 +17,10 @@ from Earthworks import prepareLot
 import TreeGestion
 import time
 
-start_time = time.time()
-
 # change to INFO if you want a verbose log!
 for handler in logging.root.handlers[:]:
    logging.root.removeHandler(handler)
-logging.basicConfig(filename="log", level=logging.WARNING, filemode='w')
+logging.basicConfig(filename="log", level=logging.INFO, filemode='w')
 
 # remove INFO logs from pymclevel
 #logging.getLogger("pymclevel").setLevel(logging.WARNING)
@@ -31,7 +29,6 @@ logging.basicConfig(filename="log", level=logging.WARNING, filemode='w')
 #logging.getLogger().addHandler(logging.StreamHandler())
 
 def perform(level, box, options):
-	start_time = time.time()
 	logging.info("BoundingBox coordinates: ({},{}),({},{}),({},{})".format(box.miny, box.maxy, box.minx, box.maxx, box.minz, box.maxz))
 
 	# ==== PREPARATION =====
@@ -41,14 +38,14 @@ def perform(level, box, options):
 	world = utilityFunctions.generateMatrix(level, box, width,depth,height)
 	world_space = utilityFunctions.dotdict({"y_min": 0, "y_max": height-1, "x_min": 0, "x_max": width-1, "z_min": 0, "z_max": depth-1})
 	logging.info("Generating simple height map")
-	simple_height_map = utilityFunctions.getSimpleHeightMap(level,box) #no height = -1 when water block
+	simple_height_map = utilityFunctions.getSimpleHeightMap(level,box) #no height = -1 when water like block
 	logging.info("Saving and erasing the trees")
 	list_trees = TreeGestion.prepareMap(world, simple_height_map) #get a list of all trees and erase them, so we can put some of them back after
 	logging.info("Generating normal height map")
 	height_map = utilityFunctions.getHeightMap(level,box)
 	#villageDeck = utilityFunctions.generateVillageDeck("city", width, depth)
 	
-	# ==== PARTITIONING OF NEIGHBOURHOODS ==== 
+	# ==== PARTITIONING OF NEIGHBOURHOODS ====
 	logging.info("Partitioning of the map, getting city center and neighbourhoods")
 	(center, neighbourhoods) = generateCenterAndNeighbourhood(world_space, height_map)
 	all_buildings = []
@@ -64,7 +61,7 @@ def perform(level, box, options):
 	available_lots = 0
 	maximum_tries = 50
 	current_try = 0
-	threshold = 1
+	threshold = 20
 	partitioning_list = []
 	temp_partitioning_list = []
 
@@ -130,7 +127,7 @@ def perform(level, box, options):
 	current_try = 0
 	minimum_lots = 50
 	available_lots = 0
-	threshold = 1
+	threshold = 50
 	partitioning_list = []
 	final_partitioning = []
 	
@@ -180,17 +177,30 @@ def perform(level, box, options):
 		for p in final_partitioning:
 			logging.info("\t{}".format(p))
 
-	print("NB of lots : {}".format(len(final_partitioning)))
+	logging.info("Building in the neighbourhood")
+	n = 0
 	for i in xrange(0, int(len(final_partitioning)*0.50)+1):
 		house = generateHouse(world, final_partitioning[i], height_map, simple_height_map)
 		all_buildings.append(house)
+		logging.info("House number : {} built on lot number {}".format(n+1, i+1))
+		n+=1
+	n = 0
 	for i in xrange(int(len(final_partitioning)*0.50)+1, int(len(final_partitioning)*0.70)+1):
 		farm = generateFarm(world, final_partitioning[i], height_map)
 		all_buildings.append(farm)
+		logging.info("Farm number : {} built on lot number {}".format(n+1, i+1))
+		n+=1
+	n = 0
+	m = 0
 	for i in xrange(int(len(final_partitioning)*0.70)+1, len(final_partitioning)):
 		slopeStructure = generateSlopeStructure(world, final_partitioning[i], height_map, simple_height_map)
 		if slopeStructure.type == "tower":
 			all_buildings.append(slopeStructure)
+			logging.info("Tower number : {} built on lot number {}".format(n+1, i+1))
+			n+=1
+		else:
+			logging.info("RollerCoaster number : {} built on lot number {}".format(m+1, i+1))
+			m+=1
 
 	# ==== GENERATE PATH MAP  ==== 
  	# generate a path map that gives the cost of moving to each neighbouring cell
@@ -217,7 +227,7 @@ def perform(level, box, options):
 			simple_path = utilityFunctions.simpleAStar(p1.entranceLot, p2.entranceLot, simple_pathMap, simple_height_map) #water and height are not important
 			list_end_points = utilityFunctions.findBridgeEndPoints(world, simple_path, simple_height_map)
 
-			if len(list_end_points)%2 == 0:
+			if list_end_points != []:
 				for i in xrange(0,len(list_end_points),2):
 					logging.info("Found water between {} and {}. Trying to generating a {} bridge...".format(list_end_points[i], list_end_points[i+1], bridge_Type))
 					GenerateBridge.generateBridge(world, simple_height_map, list_end_points[i], list_end_points[i+1], bridge_Type)
@@ -247,7 +257,6 @@ def perform(level, box, options):
 
 	# ==== UPDATE WORLD ====
 	world.updateWorld()
-	print("World updated : {} seconds".format(time.time() - start_time))
 
 def generateCenterAndNeighbourhood(space, height_map):
 	neighbourhoods = []

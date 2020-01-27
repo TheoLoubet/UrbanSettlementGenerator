@@ -437,26 +437,25 @@ def getScoreArea_type3(height_map, min_x, max_x, min_z, max_z):
   	return value
 
 def getScoreArea_type4(height_map, min_x, max_x, min_z, max_z):
-	nb_block = (max_x-min_x)*(max_z-min_z)
+	area_surface = (max_x-min_x)*(max_z-min_z)
 	list_height = []
 	for x in range(min_x, max_x+1):
 		for z in range(min_z, max_z+1):
 			list_height.append(height_map[x][z])
+	
 	list_height_nb_occurence = []
-	for v in range(min(list_height), max(list_height)+1):
-		nb_occurence = list_height.count(v)
-		if nb_occurence != 0:
-			list_height_nb_occurence.append((v, nb_occurence))
-	most_occured = max(list_height_nb_occurence,key=itemgetter(1))[0]
+	for h in set(list_height):
+		nb_occurence = list_height.count(h)
+		list_height_nb_occurence.append((h, nb_occurence))
+	height_mode = max(list_height_nb_occurence,key=itemgetter(1))[0]
+	
 	list_cost_per_height = []
-	for v, n in list_height_nb_occurence:
-		list_cost_per_height.append((v, n, (abs(v-most_occured))))
-	list_cost_percentage = []
-	for v, n, c in list_cost_per_height:
-		list_cost_percentage.append((n, c, int(((100-(n*100/nb_block))*c)/100)))
+	for h, nb in list_height_nb_occurence:
+		list_cost_per_height.append((h, nb, (abs(h-height_mode))))
+	
 	score = 0
-	for n, c, v in list_cost_percentage:
-		score += v
+	for h, nb, c in list_cost_per_height:
+		score += c
 	return score
 
 def getHeightCounts(matrix, min_x, max_x, min_z, max_z):
