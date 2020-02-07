@@ -131,20 +131,20 @@ def generatePath(matrix, path, height_map, pavement_Type):
 		if (b, d) != (1, 6):
 			matrix.setValue(h,x,z,pavement_Block)
 			fillUnderneath(matrix, h-1, x, z)
-			fillAbove(matrix, h+1, x, z, 5)
+			fillAbove(matrix, h+1, x, z, 6)
 			# check if we are moving in the x axis (so to add a new pavement
 			# on the z-1, z+1 block)
 			if x != next_block[0]:
 
 				# if that side block is walkable
-				if z-1 >= 0 and height_map[x][z-1] != -1 and h-height_map[x][z-1] in [0, 1]: 
+				if z-1 >= 0 and height_map[x][z-1] != -1 and h-height_map[x][z-1] in [0, 1]:
 					matrix.setValue(h,x,z-1,pavement_Block)
 					height_map[x][z-1] = h
 					# try to fill with earth underneath if it's empty
 					#logging.info("Filling underneath at height {}".format(h-1))
 					fillUnderneath(matrix, h-1, x, z-1)
 					# fill upwards with air to remove any obstacles
-					fillAbove(matrix, h+1, x, z-1, 5)
+					fillAbove(matrix, h+1, x, z-1, 6)
 
 				# if the opposite side block is walkable
 				if z+1 < matrix.depth and height_map[x][z+1] != -1 and h-height_map[x][z+1] in [0, 1]:
@@ -152,7 +152,7 @@ def generatePath(matrix, path, height_map, pavement_Type):
 					height_map[x][z+1] = h
 					#logging.info("Filling underneath at height {}".format(h-1))
 					fillUnderneath(matrix, h-1, x, z+1)
-					fillAbove(matrix, h+1, x, z+1, 5)
+					fillAbove(matrix, h+1, x, z+1, 6)
 
 			elif z != next_block[1]:
 				# check if we are moving in the z axis (so add a new pavement
@@ -162,7 +162,7 @@ def generatePath(matrix, path, height_map, pavement_Type):
 					height_map[x-1][z] = h
 					#logging.info("Filling underneath at height {}".format(h-1))
 					fillUnderneath(matrix, h-1, x-1, z)
-					fillAbove(matrix, h+1, x-1, z, 5)
+					fillAbove(matrix, h+1, x-1, z, 6)
 
 
 				if x+1 < matrix.width and height_map[x+1][z] != -1 and h-height_map[x+1][z] in [0, 1]:
@@ -170,7 +170,7 @@ def generatePath(matrix, path, height_map, pavement_Type):
 					height_map[x+1][z] = h
 					#logging.info("Filling underneath at height {}".format(h-1))
 					fillUnderneath(matrix, h-1, x+1, z)
-					fillAbove(matrix, h+1, x+1, z, 5)
+					fillAbove(matrix, h+1, x+1, z, 6)
 
 		else:
 			logging.info("Stone path at point ({}, {}, {}) already existing, going forward".format(h, x, z))
@@ -217,8 +217,7 @@ def generatePath(matrix, path, height_map, pavement_Type):
 					(b, d) = utilityFunctions.getBlockFullValue(matrix, ladder_h, next_block[0], next_block[1])
 					if (b, d) != (1, 6):
 						matrix.setValue(ladder_h, next_block[0], next_block[1], (pavement_Block))
-				matrix.setValue(next_h+1, x, z, (0,0))
-				matrix.setValue(next_h+2, x, z, (0,0))
+				fillAbove(matrix, next_h+1, x, z, 6)
 
 			elif h > next_h:
 				if orientation == "N":   stair_subID = 2
@@ -232,8 +231,7 @@ def generatePath(matrix, path, height_map, pavement_Type):
 					(b, d) = utilityFunctions.getBlockFullValue(matrix, h, x, z)
 					if (b, d) != (1, 6):
 						matrix.setValue(ladder_h, x, z, (pavement_Block))
-				matrix.setValue(h+1, x, z, (0,0))
-				matrix.setValue(h+2, x, z, (0,0))
+				fillAbove(matrix, h+1, x, z, 6)
 
 		#build next light and update the blocksection
 		if block == block_section[len(block_section)-1]:

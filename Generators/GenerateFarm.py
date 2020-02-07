@@ -13,6 +13,7 @@ WHEAT_ID = (59, 0)
 CARROT_ID = (141, 0)
 POTATO_ID = (142, 0)
 GRASS_PATH_ID = (208, 0)
+OAK_FENCE_GATE_ID = 107
 plants = [WHEAT_ID, CARROT_ID, POTATO_ID]
 PLANT_SPECIES_NUMBER = 3
 
@@ -36,52 +37,46 @@ def generateFarm(matrix, h_min, h_max, x_min, x_max, z_min, z_max, farmType):
 		generateBasicPattern(matrix, h_min, x_min, x_max, z_min, z_max)
 	elif farmType == "smiley":
 		generateSmileyPattern(matrix, h_min, x_min, x_max, z_min, z_max)
-		
+
 	#create door and entrance path
 	if farm.orientation == "S":
 		door_x = x_max - 2
 		door_z = z_max - 1
-		matrix.setValue(h_min+1, door_x, door_z, (107,0))
 		farm.entranceLot = (door_x, farm.lotArea.z_max)
-		for z in range(door_z+1, farm.lotArea.z_max+1):
-			matrix.setValue(h_min,door_x,z, GRASS_PATH_ID)
-			matrix.setValue(h_min,door_x-1,z, GRASS_PATH_ID)
-			matrix.setValue(h_min,door_x+1,z, GRASS_PATH_ID)
+		generateEntrance(matrix, 0, h_min, door_x, door_z, door_z + 1, farm.lotArea.z_max + 1)
 
 	elif farm.orientation == "N":
 		door_x = x_min + 2
 		door_z = z_min + 1
-		matrix.setValue(h_min+1, door_x, door_z, (107,2))
 		farm.entranceLot = (door_x, farm.lotArea.z_min)
-		# entrance path
-		for z in range(farm.lotArea.z_min, door_z):
-			matrix.setValue(h_min,door_x,z, GRASS_PATH_ID)
-			matrix.setValue(h_min,door_x-1,z, GRASS_PATH_ID)
-			matrix.setValue(h_min,door_x+1,z, GRASS_PATH_ID)
+		generateEntrance(matrix, 2, h_min, door_x, door_z, farm.lotArea.z_min, door_z)
 
 	elif farm.orientation == "W":
 		door_x = x_min + 1
 		door_z = z_max - 2
-		matrix.setValue(h_min+1, door_x, door_z, (107,1))
-		farm.entranceLot = (farm.lotArea.x_min, door_z) 
-		# entrance path
-		for x in range(farm.lotArea.x_min, door_x):
-			matrix.setValue(h_min,x,door_z, GRASS_PATH_ID)
-			matrix.setValue(h_min,x,door_z-1, GRASS_PATH_ID)
-			matrix.setValue(h_min,x,door_z+1, GRASS_PATH_ID)
+		farm.entranceLot = (farm.lotArea.x_min, door_z)
+		generateEntrance(matrix, 1, h_min, door_x, door_z, farm.lotArea.x_min, door_x)
 
 	elif farm.orientation == "E":
 		door_x = x_max - 1
 		door_z = z_min + 2
-		matrix.setValue(h_min+1, door_x, door_z, (107,3))
-		farm.entranceLot = (farm.lotArea.x_max, door_z) 
-		# entrance path
-		for x in range(door_x+1, farm.lotArea.x_max+1):
-			matrix.setValue(h_min,x,door_z, GRASS_PATH_ID)
-			matrix.setValue(h_min,x,door_z-1, GRASS_PATH_ID)
-			matrix.setValue(h_min,x,door_z+1, GRASS_PATH_ID)
+		farm.entranceLot = (farm.lotArea.x_max, door_z)
+		generateEntrance(matrix, 3, h_min, door_x, door_z, door_x + 1, farm.lotArea.x_max + 1)
 
 	return farm
+
+def generateEntrance(matrix, orientation, h_min, door_x, door_z, min_bound, max_bound):
+	if orientation % 2 == 0:
+		for z in range(min_bound, max_bound):
+			matrix.setValue(h_min, door_x, z, GRASS_PATH_ID)
+			matrix.setValue(h_min, door_x - 1, z, GRASS_PATH_ID)
+			matrix.setValue(h_min, door_x + 1, z, GRASS_PATH_ID)
+	else:
+		for x in range(min_bound, max_bound):
+			matrix.setValue(h_min, x, door_z, GRASS_PATH_ID)
+			matrix.setValue(h_min, x, door_z - 1, GRASS_PATH_ID)
+			matrix.setValue(h_min, x, door_z + 1, GRASS_PATH_ID)
+	matrix.setValue(h_min + 1, door_x, door_z, (OAK_FENCE_GATE_ID, orientation))
 
 def getFarmAreaInsideLot(h_min, h_max, x_min, x_max, z_min, z_max, farmType):
 	farm_size_x = farm_size_z = 0

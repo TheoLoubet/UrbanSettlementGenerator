@@ -56,8 +56,8 @@ def generateBridge(matrix, height_map, p1, p2, bridge_Type): #generate a bridge 
 
 		#build cross in the middle of the bridge
 		matrix.setValue(h_bridge, middlepoint[0], middlepoint[1], bridge_Middle_Double)
-		matrix.setValue(h_bridge, middlepoint[0]+x_val, middlepoint[1]+z_val, bridge_Middle_Double)
-		matrix.setValue(h_bridge, middlepoint[0]-x_val, middlepoint[1]-z_val, bridge_Middle_Double)
+		setIfCorrect(matrix, h_bridge, middlepoint[0]+x_val, middlepoint[1]+z_val, bridge_Middle_Double)
+		setIfCorrect(matrix, h_bridge, middlepoint[0]-x_val, middlepoint[1]-z_val, bridge_Middle_Double)
 		buildPillar(matrix, h_bridge-1, middlepoint)
 
 		#_______________________main path of the bridge______________________________
@@ -79,7 +79,7 @@ def generateBridge(matrix, height_map, p1, p2, bridge_Type): #generate a bridge 
 				else:
 					matrix.setValue(h_actual, path_bridge[i][0], path_bridge[i][1], bridge_Middle_Double)
 				is_half_block = not is_half_block
-			
+
 			#max height reached
 			else:
 				matrix.setValue(h_bridge, path_bridge[i][0], path_bridge[i][1], bridge_Middle_Double)
@@ -111,13 +111,13 @@ def generateBridge(matrix, height_map, p1, p2, bridge_Type): #generate a bridge 
 					setIfCorrect(matrix, h_actual, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val, bridge_Side_Double)
 					setIfCorrect(matrix, h_actual, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val, bridge_Side_Double)
 				is_half_block = not is_half_block
-			
+
 			#max height reached
 			else:
 				setIfCorrect(matrix, h_bridge, path_bridge[i][0]-x_val, path_bridge[i][1]-z_val, bridge_Side_Double)
 				setIfCorrect(matrix, h_bridge, path_bridge[i][0]+x_val, path_bridge[i][1]+z_val, bridge_Side_Double)
 				#Build the barrier and light when the direction is fixed if the bridge is normal
-				if normal_bridge == True and barrierPut == False and len(path_bridge) - i >= 2:
+				if normal_bridge == True and barrierPut == False and len(path_bridge) - i > 2:
 					if path_bridge[i-1][0] != path_bridge[i][0] != path_bridge[i+1][0]:
 						buildBarrierX(matrix, h_bridge, path_bridge[i:len(path_bridge)])
 						barrierPut = True
@@ -144,7 +144,7 @@ def generateBridge(matrix, height_map, p1, p2, bridge_Type): #generate a bridge 
 
 	def setIfCorrect(matrix, h, x, z, i): #put block only if the position given is correct
 		(b,d) = utilityFunctions.getBlockFullValue(matrix, h-1, x, z)
-		if matrix.getValue(h, x, z) in air_like and (b,d) not in [bridge_Side_Double,bridge_Side_Top,bridge_Side_Bottom,bridge_Middle_Double,bridge_Middle_Top,bridge_Middle_Bottom]:
+		if matrix.getValue(h, x, z) in air_like+water_like and (b,d) not in [bridge_Side_Double,bridge_Side_Top,bridge_Side_Bottom,bridge_Middle_Double,bridge_Middle_Top,bridge_Middle_Bottom]:
 			matrix.setValue(h, x, z, i)
 
 
@@ -202,8 +202,8 @@ def generateBridge(matrix, height_map, p1, p2, bridge_Type): #generate a bridge 
 
 		#build cross in the middle of the bridge
 		matrix.setValue(h, middlepoint[0], middlepoint[1], bridge_Middle_Double)
-		matrix.setValue(h, middlepoint[0]+x_val, middlepoint[1]+z_val, bridge_Middle_Double)
-		matrix.setValue(h, middlepoint[0]-x_val, middlepoint[1]-z_val, bridge_Middle_Double)
+		setIfCorrect(matrix, h, middlepoint[0]+x_val, middlepoint[1]+z_val, bridge_Middle_Double)
+		setIfCorrect(matrix, h, middlepoint[0]-x_val, middlepoint[1]-z_val, bridge_Middle_Double)
 		buildPillar(matrix, h-1, middlepoint)
 
 		for i in range(0, len(path_bridge)-1):
@@ -227,8 +227,12 @@ def generateBridge(matrix, height_map, p1, p2, bridge_Type): #generate a bridge 
 	middlepoint = (int((p1[0]+p2[0])/2),(int((p1[1]+p2[1])/2)))
 	path_bridge1 = getPathBridge(matrix, p1, middlepoint) #first half
 	path_bridge2 = getPathBridge(matrix, p2, middlepoint) #second half
-	
-	if utilityFunctions.getManhattanDistance(p1,p2) < 6:
+
+	if utilityFunctions.getManhattanDistance(p1,p2) <= 2:
+		logging.info("Bridge to small, non buildable")
+		raise ValueError('Bridge non buildable')
+
+	elif utilityFunctions.getManhattanDistance(p1,p2) <= 7:
 		logging.info("Length of the bridge = {}, Bridge too small, building a small one".format(utilityFunctions.getManhattanDistance(p1,p2)))
 		buildSmallBridge(matrix, path_bridge1, height_map[max_point[0]][max_point[1]])
 		buildSmallBridge(matrix, path_bridge2, height_map[max_point[0]][max_point[1]])
@@ -238,7 +242,7 @@ def generateBridge(matrix, height_map, p1, p2, bridge_Type): #generate a bridge 
 		cleanFundation(matrix, p1, height_map)
 		cleanFundation(matrix, p2, height_map)
 
-		#check if the normal bridge is buildable 
+		#check if the normal bridge is buildable
 		if height_map[min_point[0]][min_point[1]] + len(path_bridge1)*0.5 >= h_bridge:
 			logging.info("Length of the bridge = {}, enough to go up on both sides, building a normal bridge".format(utilityFunctions.getManhattanDistance(p1,p2)))
 			#build the bridge

@@ -442,17 +442,17 @@ def getScoreArea_type4(height_map, min_x, max_x, min_z, max_z):
 	for x in range(min_x, max_x+1):
 		for z in range(min_z, max_z+1):
 			list_height.append(height_map[x][z])
-	
+
 	list_height_nb_occurence = []
 	for h in set(list_height):
 		nb_occurence = list_height.count(h)
 		list_height_nb_occurence.append((h, nb_occurence))
 	height_mode = max(list_height_nb_occurence,key=itemgetter(1))[0]
-	
+
 	list_cost_per_height = []
 	for h, nb in list_height_nb_occurence:
 		list_cost_per_height.append((h, nb, (abs(h-height_mode))))
-	
+
 	score = 0
 	for h, nb, c in list_cost_per_height:
 		score += c

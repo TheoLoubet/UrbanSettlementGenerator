@@ -26,7 +26,7 @@ def prepareLot(matrix, p, height_map, block):
 			for z in range(p[4], p[5]+1):
 				matrix.setValue(terrain_height, x, z, block)
 		h = matrix.getMatrixY(terrain_height)
-		
+
 
 	logging.info("Index of height {} in selection box matrix: {}".format(terrain_height, h))
 
@@ -69,7 +69,7 @@ def flattenPartition(matrix, x_min, x_max, z_min, z_max, height_map, block):
 						matrix.setValue(y,x,z, block)
 				else:
 					#update every block between top height and the desired height
-					# when bringing the ground to a lower level, this will have the 
+					# when bringing the ground to a lower level, this will have the
 					# effect of e.g. erasing trees that were on top of that block
 					# this may cause some things to be unproperly erased
 					# (e.g. a branch of a tree coming from an nearby block)

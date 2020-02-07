@@ -30,7 +30,7 @@ def generateBuilding(matrix, h_min, h_max, x_min, x_max, z_min, z_max):
 	max_height = h_max-h_min
 	if max_height > 32:
 		h_max = h_min+random.randint(32, 80 if max_height > 80 else max_height)
-		
+
 	while (h_max-h_min) % floor_size != 0:
 		h_max -= 1
 
@@ -55,7 +55,7 @@ def generateBuilding(matrix, h_min, h_max, x_min, x_max, z_min, z_max):
 		generateBuildingWindows_AlongZ(matrix, h_min, h_max, floor_size, x_min, x_max, z_max)
 		generateCorridorInterior(matrix, h_min, h_max, floor_size, x_min, x_max, z_max-6, z_max)
 		generateFloorPlan(matrix, h_min, h_max, floor_size, x_min, x_max, z_min, z_max, wall)
-		
+
 		generateStairs(matrix, h_min, h_max, floor_size, x_min, x_max, z_min, z_max, wall)
 		generateApartmentInterior(matrix, h_min, h_max, floor_size, x_min, x_max, z_min, z_max-6)
 
@@ -98,7 +98,7 @@ def generateStairs(matrix, h_min, h_max, floor_size, x_min, x_max, z_min, z_max,
 				for h in range(cur_floor+1, step):
 					matrix.setValue(h, x, z, (98, 0))
 					matrix.setValue(h, x, z-1, (98, 0))
-				
+
 				step -= 1
 				x -= 1
 		if floor % 2 == 1:
@@ -118,7 +118,7 @@ def generateStairs(matrix, h_min, h_max, floor_size, x_min, x_max, z_min, z_max,
 					matrix.setValue(h, x, z, (98, 0))
 					matrix.setValue(h, x, z-1, (98, 0))
 				step -= 1
-				x += 1	
+				x += 1
 
 		floor += 1
 		cur_floor += floor_size
@@ -141,12 +141,12 @@ def generateFloorPlan(matrix, h_min, h_max, floor_size, x_min, x_max, z_min, z_m
 		cur_floor += floor_size
 
 def generateApartmentInterior(matrix, h_min, h_max, floor_size, x_min, x_max, z_min, z_max):
-	
+
 	cur_floor = h_min
 	floor = 0
 	x_mid = x_max - int((x_max - x_min)/2)
 	z_mid = z_max - int((z_max - z_min)/2)
-	
+
 	while cur_floor < h_max:
 		cur_floor_ceiling = cur_floor+floor_size
 

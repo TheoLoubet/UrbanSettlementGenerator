@@ -44,15 +44,15 @@ def perform(level, box, options):
 	logging.info("Generating normal height map")
 	height_map = utilityFunctions.getHeightMap(level,box)
 	#villageDeck = utilityFunctions.generateVillageDeck("city", width, depth)
-	
+
 	# ==== PARTITIONING OF NEIGHBOURHOODS ====
 	logging.info("Partitioning of the map, getting city center and neighbourhoods")
 	(center, neighbourhoods) = generateCenterAndNeighbourhood(world_space, height_map)
 	all_buildings = []
 
-	# ====  GENERATING CITY CENTER ==== 
+	# ====  GENERATING CITY CENTER ====
 	logging.info("Generating city center")
-	minimum_h = 50 
+	minimum_h = 50
 	minimum_w = 25
 	mininum_d = 25
 
@@ -83,11 +83,11 @@ def perform(level, box, options):
 				(y_min, y_max, x_min, x_max, z_min, z_max) = (p[0], p[1], p[2],p[3], p[4], p[5])
 				failed_conditions = []
 				cond1 = utilityFunctions.hasValidGroundBlocks(x_min, x_max,z_min,z_max, height_map)
-				if cond1 == False: failed_conditions.append(1) 
+				if cond1 == False: failed_conditions.append(1)
 				cond2 = utilityFunctions.hasMinimumSize(y_min, y_max, x_min, x_max,z_min,z_max, minimum_h, minimum_w, mininum_d)
-				if cond2 == False: failed_conditions.append(2) 
+				if cond2 == False: failed_conditions.append(2)
 				cond3 = utilityFunctions.hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, utilityFunctions.getScoreArea_type4, threshold)
-				if cond3 == False: failed_conditions.append(3) 
+				if cond3 == False: failed_conditions.append(3)
 				if cond1 and cond2 and cond3:
 					score = utilityFunctions.getScoreArea_type4(height_map, x_min, x_max, z_min, z_max)
 					valid_partitioning.append((score, p))
@@ -107,7 +107,7 @@ def perform(level, box, options):
 
 		threshold += 2
 		current_try += 1
-	
+
 	logging.info("Final lots ({}) for the City Centre {}: ".format(len(final_partitioning), center))
 	for p in final_partitioning:
 		logging.info("\t{}".format(p))
@@ -116,9 +116,9 @@ def perform(level, box, options):
 		building = generateBuilding(world, partition, height_map, simple_height_map)
 		all_buildings.append(building)
 
-	# ==== GENERATING NEIGHBOURHOODS ==== 
+	# ==== GENERATING NEIGHBOURHOODS ====
 	logging.info("Generating neighbourhoods")
-	minimum_h = 10 
+	minimum_h = 10
 	minimum_w = 16
 	mininum_d = 16
 
@@ -130,13 +130,13 @@ def perform(level, box, options):
 	threshold = 50
 	partitioning_list = []
 	final_partitioning = []
-	
+
 	while available_lots < minimum_lots and current_try < maximum_tries:
 		partitioning_list = []
 		for i in range(iterate):
 			for neigh in neighbourhoods:
 				logging.info("Generating {} different partitionings for the neighbourhood {}".format(iterate, neigh))
-				
+
 				if RNG.random() < 0.5:
 					partitioning = binarySpacePartitioning(neigh[0], neigh[1], neigh[2], neigh[3], neigh[4], neigh[5], [])
 				else:
@@ -145,13 +145,13 @@ def perform(level, box, options):
 				valid_partitioning = []
 				for p in partitioning:
 					(y_min, y_max, x_min, x_max, z_min, z_max) = (p[0], p[1], p[2], p[3], p[4], p[5])
-					failed_conditions = [] 
+					failed_conditions = []
 					cond1 = utilityFunctions.hasValidGroundBlocks(x_min, x_max,z_min,z_max, height_map)
-					if cond1 == False: failed_conditions.append(1) 
+					if cond1 == False: failed_conditions.append(1)
 					cond2 = utilityFunctions.hasMinimumSize(y_min, y_max, x_min, x_max,z_min,z_max, minimum_h, minimum_w, mininum_d)
-					if cond2 == False: failed_conditions.append(2) 
+					if cond2 == False: failed_conditions.append(2)
 					cond3 = utilityFunctions.hasAcceptableSteepness(x_min, x_max, z_min, z_max, height_map, utilityFunctions.getScoreArea_type4, threshold)
-					if cond3 == False: failed_conditions.append(3) 
+					if cond3 == False: failed_conditions.append(3)
 					if cond1 and cond2 and cond3:
 						score = utilityFunctions.getScoreArea_type4(height_map, x_min, x_max, z_min, z_max)
 						valid_partitioning.append((score, p))
@@ -161,7 +161,7 @@ def perform(level, box, options):
 
 				partitioning_list.extend(valid_partitioning)
 				logging.info("Generated a partition with {} valid lots and {} invalids ones".format(len(valid_partitioning), len(partitioning)-len(valid_partitioning)))
-	
+
 		temp_partitioning_list.extend(partitioning_list)
 		# order partitions by steepness
 		temp_partitioning_list = sorted(temp_partitioning_list)
@@ -179,39 +179,40 @@ def perform(level, box, options):
 
 	logging.info("Building in the neighbourhood")
 	n = 0
-	for i in xrange(0, int(len(final_partitioning)*0.50)+1):
+	for i in xrange(0, int(len(final_partitioning) * 0.50) + 1):
 		house = generateHouse(world, final_partitioning[i], height_map, simple_height_map)
 		all_buildings.append(house)
-		logging.info("House number : {} built on lot number {}".format(n+1, i+1))
-		n+=1
+		logging.info("House number : {} built on lot number {}".format(n + 1, i + 1))
+		n += 1
 	n = 0
-	for i in xrange(int(len(final_partitioning)*0.50)+1, int(len(final_partitioning)*0.70)+1):
-		farm = generateFarm(world, final_partitioning[i], height_map)
+	for i in xrange(int(len(final_partitioning) * 0.50) + 1, int(len(final_partitioning) * 0.70) + 1):
+        # generate either a regular farm or a smiley farm
+		farm = generateFarm(world, final_partitioning[i], height_map, simple_height_map) if (RNG.randint(0, 2) == 0) else generateFarm(world, final_partitioning[i], height_map, simple_height_map, "smiley")
 		all_buildings.append(farm)
-		logging.info("Farm number : {} built on lot number {}".format(n+1, i+1))
-		n+=1
+		logging.info("Farm number : {} built on lot number {}".format(n + 1, i + 1))
+		n += 1
 	n = 0
 	m = 0
 	for i in xrange(int(len(final_partitioning)*0.70)+1, len(final_partitioning)):
 		slopeStructure = generateSlopeStructure(world, final_partitioning[i], height_map, simple_height_map)
 		if slopeStructure.type == "tower":
 			all_buildings.append(slopeStructure)
-			logging.info("Tower number : {} built on lot number {}".format(n+1, i+1))
-			n+=1
+			logging.info("Tower number : {} built on lot number {}".format(n + 1, i + 1))
+			n += 1
 		else:
-			logging.info("RollerCoaster number : {} built on lot number {}".format(m+1, i+1))
-			m+=1
+			logging.info("RollerCoaster number : {} built on lot number {}".format(m + 1, i + 1))
+			m += 1
 
-	# ==== GENERATE PATH MAP  ==== 
+	# ==== GENERATE PATH MAP  ====
  	# generate a path map that gives the cost of moving to each neighbouring cell
  	logging.info("Generating path map and simple path map")
 	pathMap = utilityFunctions.getPathMap(height_map, width, depth)
 	simple_pathMap = utilityFunctions.getPathMap(simple_height_map, width, depth) #not affected by water
 
-	# ==== CONNECTING BUILDINGS WITH ROADS  ==== 
+	# ==== CONNECTING BUILDINGS WITH ROADS  ====
 	logging.info("Calling MST on {} buildings".format(len(all_buildings)))
 	MST = utilityFunctions.getMST_Manhattan(all_buildings)
-	
+
 	for m in MST:
 		p1 = m[1]
 		p2 = m[2]
@@ -285,16 +286,17 @@ def generateHouse(matrix, p, height_map, simple_height_map):
 	utilityFunctions.updateHeightMap(simple_height_map, p[2]+1, p[3]-1, p[4]+1, p[5]-1, -1)
 	return house
 
-def generateFarm(matrix, p, height_map, farmType = None):
+def generateFarm(matrix, p, height_map, simple_height_map, farmType = None):
 	logging.info("Generating a farm in lot {}".format(p))
 	h = prepareLot(matrix, p, height_map, None)
-	farm = GenerateFarm.generateFarm(matrix, h, p[1],p[2],p[3], p[4], p[5], farmType)
-	utilityFunctions.updateHeightMap(height_map, p[2]+1, p[3]-2, p[4]+1, p[5]-2, -1)
+	farm = GenerateFarm.generateFarm(matrix, h, p[1], p[2], p[3], p[4], p[5], farmType)
+	utilityFunctions.updateHeightMap(height_map, p[2] + 1, p[3] - 2, p[4] + 1, p[5] - 2, -1)
+	utilityFunctions.updateHeightMap(simple_height_map, p[2] + 1, p[3] - 2, p[4] + 1, p[5] - 2, -1)
 	return farm
 
 def generateSlopeStructure(matrix, p, height_map, simple_height_map):
 	logging.info("Trying to generate a RollerCoaster in lot {}".format(p))
-	structure = GenerateSlopeStructure.generateSlopeStructure(matrix, height_map, p[1], p[2], p[3], p[4], p[5], True)
+	structure = GenerateSlopeStructure.generateSlopeStructure(matrix, height_map, p[1], p[2], p[3], p[4], p[5])
 	if structure == False:
 		logging.info("Generating RollerCoaster failed, Generating Tower instead")
 		structure = generateTower(matrix, p, height_map, simple_height_map)
