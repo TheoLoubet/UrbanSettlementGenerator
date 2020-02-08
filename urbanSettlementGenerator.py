@@ -29,6 +29,9 @@ logging.basicConfig(filename="log", level=logging.INFO, filemode='w')
 #logging.getLogger().addHandler(logging.StreamHandler())
 
 def perform(level, box, options):
+	start_time = time.time()
+	stime = time.time()
+	
 	logging.info("BoundingBox coordinates: ({},{}),({},{}),({},{})".format(box.miny, box.maxy, box.minx, box.maxx, box.minz, box.maxz))
 
 	# ==== PREPARATION =====
@@ -44,6 +47,8 @@ def perform(level, box, options):
 	logging.info("Generating normal height map")
 	height_map = utilityFunctions.getHeightMap(level,box)
 	#villageDeck = utilityFunctions.generateVillageDeck("city", width, depth)
+	print("Preparation : {}".format(time.time() - start_time))
+	start_time = time.time()
 
 	# ==== PARTITIONING OF NEIGHBOURHOODS ====
 	logging.info("Partitioning of the map, getting city center and neighbourhoods")
@@ -115,6 +120,9 @@ def perform(level, box, options):
 	for partition in final_partitioning:
 		building = generateBuilding(world, partition, height_map, simple_height_map)
 		all_buildings.append(building)
+
+	print("City Center : {}".format(time.time() - start_time))
+	start_time = time.time()
 
 	# ==== GENERATING NEIGHBOURHOODS ====
 	logging.info("Generating neighbourhoods")
@@ -203,6 +211,9 @@ def perform(level, box, options):
 			logging.info("RollerCoaster number : {} built on lot number {}".format(m + 1, i + 1))
 			m += 1
 
+	print("Neighbourhood : {}".format(time.time() - start_time))
+	start_time = time.time()
+
 	# ==== GENERATE PATH MAP  ====
  	# generate a path map that gives the cost of moving to each neighbouring cell
  	logging.info("Generating path map and simple path map")
@@ -252,12 +263,16 @@ def perform(level, box, options):
 				logging.info("Couldnt find path between {} and {}. Generating a straight road".format(p1.entranceLot, p2.entranceLot))
 	 			GeneratePath.generatePath_StraightLine(world, p1.entranceLot[1], p1.entranceLot[2], p2.entranceLot[1], p2.entranceLot[2], height_map, pavement_Type)
 
+	print("Path and bridges : {}".format(time.time() - start_time))
+	start_time = time.time()
+
 	# ==== PUT BACK UNTOUCHED TREES ====
 	logging.info("Putting back untouched trees")
 	TreeGestion.putBackTrees(world, height_map, list_trees) #put back the trees that are not cut buy the building and are not in unwanted places
 
 	# ==== UPDATE WORLD ====
 	world.updateWorld()
+	print("All settlement : {}".format(time.time() - stime))
 
 def generateCenterAndNeighbourhood(space, height_map):
 	neighbourhoods = []

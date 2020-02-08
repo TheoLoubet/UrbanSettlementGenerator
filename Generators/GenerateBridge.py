@@ -124,6 +124,13 @@ def generateBridge(matrix, height_map, p1, p2, bridge_Type): #generate a bridge 
 					if path_bridge[i-1][1] != path_bridge[i][1] != path_bridge[i+1][1]:
 						buildBarrierZ(matrix, h_bridge, path_bridge[i:len(path_bridge)])
 						barrierPut = True
+				elif normal_bridge == True and barrierPut == False:
+					if path_bridge[i-1][0] != path_bridge[i][0] != path_bridge[i+1][0]:
+						buildBarrierX2(matrix, h_bridge, path_bridge[i:len(path_bridge)])
+						barrierPut = True
+					if path_bridge[i-1][1] != path_bridge[i][1] != path_bridge[i+1][1]:
+						buildBarrierZ2(matrix, h_bridge, path_bridge[i:len(path_bridge)])
+						barrierPut = True
 
 	def fillUnder(matrix, h, x, z): #put blocks under the position if there is air
 		(b, d) = utilityFunctions.getBlockFullValue(matrix, h, x, z)
@@ -156,16 +163,26 @@ def generateBridge(matrix, height_map, p1, p2, bridge_Type): #generate a bridge 
 			matrix.setValue(h, p[0], p[1], pillar_Base)
 			h -= 1
 
-	def buildBarrierX(matrix, h_bridge, path_bridge): #build barrier on the bridge going through the X axis
+	def buildBarrierX(matrix, h_bridge, path_bridge): #build barrier on the bridge going through the X axis with light a the beginning
 		putLight(matrix, h_bridge, path_bridge[0][0], path_bridge[0][1]-2)
 		putLight(matrix, h_bridge, path_bridge[0][0], path_bridge[0][1]+2)
 		for i in range(1, len(path_bridge)):
 			matrix.setValue(h_bridge+1, path_bridge[i][0], path_bridge[i][1]-2, pillar)
 			matrix.setValue(h_bridge+1, path_bridge[i][0], path_bridge[i][1]+2, pillar)
 
-	def buildBarrierZ(matrix, h_bridge, path_bridge): #build barrier on the bridge going through the Z axis
+	def buildBarrierZ(matrix, h_bridge, path_bridge): #build barrier on the bridge going through the Z axis with light a the beginning
 		putLight(matrix, h_bridge, path_bridge[0][0]-2, path_bridge[0][1])
 		putLight(matrix, h_bridge, path_bridge[0][0]+2, path_bridge[0][1])
+		for i in range(1, len(path_bridge)):
+			matrix.setValue(h_bridge+1, path_bridge[i][0]-2, path_bridge[i][1], pillar)
+			matrix.setValue(h_bridge+1, path_bridge[i][0]+2, path_bridge[i][1], pillar)
+
+	def buildBarrierX2(matrix, h_bridge, path_bridge): #build barrier on the bridge going through the X axis with no light
+		for i in range(1, len(path_bridge)):
+			matrix.setValue(h_bridge+1, path_bridge[i][0], path_bridge[i][1]-2, pillar)
+			matrix.setValue(h_bridge+1, path_bridge[i][0], path_bridge[i][1]+2, pillar)
+
+	def buildBarrierZ2(matrix, h_bridge, path_bridge): #build barrier on the bridge going through the Z axis with no light
 		for i in range(1, len(path_bridge)):
 			matrix.setValue(h_bridge+1, path_bridge[i][0]-2, path_bridge[i][1], pillar)
 			matrix.setValue(h_bridge+1, path_bridge[i][0]+2, path_bridge[i][1], pillar)
@@ -228,7 +245,7 @@ def generateBridge(matrix, height_map, p1, p2, bridge_Type): #generate a bridge 
 	path_bridge1 = getPathBridge(matrix, p1, middlepoint) #first half
 	path_bridge2 = getPathBridge(matrix, p2, middlepoint) #second half
 
-	if utilityFunctions.getManhattanDistance(p1,p2) <= 2:
+	if utilityFunctions.getManhattanDistance(p1,p2) <= 4:
 		logging.info("Bridge to small, non buildable")
 		raise ValueError('Bridge non buildable')
 
